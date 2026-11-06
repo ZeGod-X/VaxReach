@@ -427,7 +427,7 @@ const KEY = 'vaxreach.data.v1';
 const SESSION = 'vaxreach.session.v1';
 const Store = {
   load(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; } },
-  save(db){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast('Storage full', 'err'); } },
+  save(db){ try { localStorage.setItem(KEY, JSON.stringify(db)); return true; } catch(e){ toast('Storage full — draft could not be saved', 'err'); return false; } },
   clear(){ localStorage.removeItem(KEY); localStorage.removeItem(SESSION); }
 };
 
@@ -605,14 +605,18 @@ let DB = Store.load();
 if(!DB) { DB = seed(); Store.save(DB); }
 else { migrateChildAccounts(DB); migrateCaseScores(DB); if(!Array.isArray(DB.vaccineDrafts)) DB.vaccineDrafts=[]; Store.save(DB); }
 
-function save(){ Store.save(DB); }
+function save(){ return Store.save(DB); }
 function queueOfflineVaccinationDrafts(){
   if(!navigator.onLine||!Array.isArray(DB.vaccineDrafts)) return 0;
   const now=new Date().toISOString();
   const queued=DB.vaccineDrafts.filter(d=>d.status==='offline_draft');
   if(!queued.length) return 0;
+  const previous=queued.map(d=>({draft:d,status:d.status,syncedAt:d.syncedAt,updatedAt:d.updatedAt}));
   queued.forEach(d=>{d.status='pending_review';d.syncedAt=now;d.updatedAt=now;});
-  save();
+  if(!save()){
+    previous.forEach(p=>{p.draft.status=p.status;p.draft.updatedAt=p.updatedAt;if(p.syncedAt===undefined) delete p.draft.syncedAt;else p.draft.syncedAt=p.syncedAt;});
+    return 0;
+  }
   return queued.length;
 }
 
@@ -914,11 +918,14 @@ const App = {
     if(!administeredDate||administeredDate>todayISO()){toast('Enter a valid vaccination date','err');return;}
     const now=new Date().toISOString();
     const editing=this.state.offlineDraftEditId?DB.vaccineDrafts.find(d=>d.id===this.state.offlineDraftEditId&&d.workerId===user.id&&d.status==='rejected'):null;
+    const duplicate=DB.vaccineDrafts.find(d=>d.scheduleId===s.id&&d.id!==editing?.id&&['offline_draft','pending_review','rejected'].includes(d.status));
+    if(duplicate){toast('A draft for this scheduled dose is already waiting for review','err');return;}
+    const previousDrafts=JSON.stringify(DB.vaccineDrafts);
     const values={scheduleId:s.id,childId:child.id,vaccineCode:s.vaccineCode,administeredDate,notes:form.elements.notes.value.trim(),workerId:user.id,workerName:user.name,status:navigator.onLine?'pending_review':'offline_draft',updatedAt:now,syncedAt:navigator.onLine?now:null,reviewNote:''};
     if(this.state.offlineDraftEditId&&!editing){toast('This draft can no longer be edited','err');this.state.offlineDraftEditId=null;this.render();return;}
     if(editing) Object.assign(editing,values);
     else DB.vaccineDrafts.unshift({id:genId('vd'),...values,createdAt:now,reviewedAt:null,reviewedBy:null});
-    save();
+    if(!save()){DB.vaccineDrafts=JSON.parse(previousDrafts);this.render();return;}
     this.state.offlineDraftEditId=null;
     this.state.params={};
     toast(navigator.onLine?'Draft sent for administrator review':'Vaccination saved as an offline draft');
@@ -938,6 +945,7 @@ const App = {
     const draft=DB.vaccineDrafts.find(d=>d.id===id&&d.status==='pending_review');
     const schedule=draft&&DB.schedules.find(s=>s.id===draft.scheduleId);
     if(!draft||!schedule||schedule.administeredDate){toast('This dose cannot be verified in its current state','err');return;}
+    const previousSchedule={...schedule},previousDraft={...draft},previousAudit=DB.audit.slice();
     const now=new Date().toISOString();
     schedule.administeredDate=draft.administeredDate;
     schedule.status='completed';
@@ -950,7 +958,7 @@ const App = {
     draft.reviewedBy=user.id;
     draft.updatedAt=now;
     DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:'Verified vaccination draft '+draft.id});
-    save();
+    if(!save()){Object.assign(schedule,previousSchedule);Object.assign(draft,previousDraft);DB.audit=previousAudit;this.render();return;}
     toast('Vaccination draft verified');
     this.render();
   },
@@ -963,6 +971,7 @@ const App = {
     const note=prompt('Enter the changes required before this vaccination can be verified:');
     if(note===null) return;
     if(!note.trim()){toast('Enter a reason for requesting changes','err');return;}
+    const previousDraft={...draft},previousAudit=DB.audit.slice();
     const now=new Date().toISOString();
     draft.status='rejected';
     draft.reviewNote=note.trim();
@@ -970,7 +979,7 @@ const App = {
     draft.reviewedBy=user.id;
     draft.updatedAt=now;
     DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:'Requested changes for vaccination draft '+draft.id});
-    save();
+    if(!save()){Object.assign(draft,previousDraft);DB.audit=previousAudit;this.render();return;}
     toast('Changes requested from the health worker');
     this.render();
   },
@@ -1357,7 +1366,7 @@ const App = {
     }
 
     const childIds=new Set(scopeChildren(user).map(c=>c.id));
-    const available=DB.schedules.filter(s=>childIds.has(s.childId)&&!s.administeredDate).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+    const available=DB.schedules.filter(s=>childIds.has(s.childId)&&!s.administeredDate&&!DB.vaccineDrafts.some(d=>d.scheduleId===s.id&&d.id!==this.state.offlineDraftEditId&&['offline_draft','pending_review','rejected'].includes(d.status))).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
     const editing=this.state.offlineDraftEditId?DB.vaccineDrafts.find(d=>d.id===this.state.offlineDraftEditId&&d.workerId===user.id&&d.status==='rejected'):null;
     const selectedSchedule=editing?.scheduleId||this.state.params.scheduleId||'';
     const drafts=DB.vaccineDrafts.filter(d=>d.workerId===user.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
