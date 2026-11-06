@@ -1661,6 +1661,12 @@ const App = {
     if(user.role!=='worker') return '<div class="card card-pad">Access denied.</div>';
     const drafts=DB.vaccineDrafts.filter(d=>d.workerId===user.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
     const count=status=>drafts.filter(d=>d.status===status).length;
+    const draftRows=drafts.map(d=>{
+      const child=DB.children.find(c=>c.id===d.childId);
+      const reviewNote=d.reviewNote?`<div class="tiny muted" style="margin-top:5px">${esc(d.reviewNote)}</div>`:'';
+      const editAction=d.status==='rejected'?`<button class="btn ghost sm" onclick="App.openAdministerModal('${d.scheduleId}','${d.childId}','${esc(d.vaccineCode)}','${d.id}')">Edit & resubmit</button>`:'';
+      return `<tr><td>${esc(child?.name||'—')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${statusBadge(d.status)}${reviewNote}</td><td>${fmtDT(d.updatedAt||d.createdAt)}</td><td>${editAction}</td></tr>`;
+    }).join('');
     return `<div class="between" style="margin-bottom:16px"><div><h2>Offline drafts</h2><p class="muted small">Saved vaccination reports stay unverified until an administrator approves them.</p></div></div>
       ${!navigator.onLine?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>You are offline</h4><p>Vaccination reports are saved on this device. When internet returns, they move to the administrator review queue. Keep this browser's data and do not clear site storage while drafts are waiting.</p></div></div>`:`<div class="context-banner cb-follow"><div class="cb-ic">${icon('wifi')}</div><div><h4>Connection available</h4><p>New reports will enter the administrator review queue. They will not update a child's official schedule until approved.</p></div></div>`}
       <div class="kpi-grid" style="margin-bottom:16px">
@@ -1671,7 +1677,7 @@ const App = {
       </div>
       <div class="card"><div class="card-head"><h3>My vaccination submissions</h3><span class="badge gray">${drafts.length}</span></div><div class="table-wrap"><table class="tbl">
         <thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Status</th><th>Last update</th><th></th></tr></thead>
-        <tbody>${drafts.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<tr><td>${esc(child?.name||'—')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${statusBadge(d.status)}${d.reviewNote?`<div class="tiny muted" style="margin-top:5px">${esc(d.reviewNote)}</div>`:''}</td><td>${fmtDT(d.updatedAt||d.createdAt)}</td><td>${d.status==='rejected'?`<button class="btn ghost sm" onclick="App.openAdministerModal('${d.scheduleId}','${d.childId}','${esc(d.vaccineCode)}','${d.id}')">Edit & resubmit</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No vaccination drafts yet. Open a child's schedule and select Record to start one.</td></tr>'}</tbody>
+        <tbody>${draftRows||'<tr><td colspan="6" class="muted">No vaccination drafts yet. Choose a child and select Record to start.</td></tr>'}</tbody>
       </table></div></div>
       <div class="disclaimer-box">Prototype storage is limited to this browser. This demonstrates offline draft and administrator-review steps; actual delivery between devices requires a secure backend and sync API. Use demo data only.</div>`;
   },
