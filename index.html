@@ -193,7 +193,51 @@ table.tbl tbody tr:hover{background:var(--surface-soft)}
 .land-demo-card:hover{border-color:var(--brand-200)}
 .land-demo-card strong{font-size:.88rem;font-weight:600}
 .land-demo-card code{font-size:.74rem;font-family:ui-monospace,monospace;color:var(--ink-700);background:var(--surface-muted);padding:2px 6px;border-radius:4px;align-self:flex-start}
+.land-nav-links{display:flex;align-items:center;gap:17px;margin-left:auto}
+.land-nav-links a{font-size:.8rem;font-weight:600;color:var(--ink-600)}
+.land-nav-links a:hover{color:var(--brand-700)}
+.land-section-intro{max-width:66ch;margin:0 auto 22px;text-align:center;color:var(--ink-600);line-height:1.65}
+.land-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.land-info-card{padding:18px;background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-md);box-shadow:var(--shadow-xs)}
+.land-info-card h3{font-size:.92rem;font-weight:700;margin:10px 0 6px}
+.land-info-card p{font-size:.81rem;color:var(--ink-600);line-height:1.6}
+.land-info-icon{width:34px;height:34px;border-radius:var(--r-sm);display:grid;place-items:center;background:var(--brand-50);color:var(--brand-700)}
+.land-info-icon .icon{width:18px;height:18px}
+.land-step-no{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--brand-600);color:#fff;font-size:.78rem;font-weight:700}
+.land-demo-note{padding:16px 18px;border:1px solid var(--line-200);border-left:3px solid var(--warn-600);border-radius:var(--r-md);background:var(--surface-soft);color:var(--ink-600);font-size:.82rem;line-height:1.65}
+.land-demo-note strong{color:var(--ink-900)}
+.land-bottom-cta{text-align:center;padding-top:8px}
+#about,#how-it-works,#roles,#features,#demo-accounts,#demo-notice{scroll-margin-top:84px}
+@media(max-width:760px){.land-nav-links{order:3;width:100%;justify-content:center;margin:0;gap:13px;flex-wrap:wrap}.land-nav-actions{margin-left:auto}}
 .land-footer{border-top:1px solid var(--line-200);padding:28px 24px;text-align:center;color:var(--ink-500);font-size:.8rem;line-height:1.6;background:var(--surface-soft)}
+.camp-card{display:block;width:100%;padding:0;text-align:left;color:inherit;background:var(--surface);border:1px solid var(--line-200);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.camp-card:hover{border-color:var(--brand-500);box-shadow:var(--shadow-sm)}
+.camp-card:focus-visible{outline:2px solid var(--brand-600);outline-offset:2px}
+.camp-open-hint{margin-top:12px;color:var(--brand-700);font-size:.75rem;font-weight:600}
+.camp-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.camp-detail{padding:12px;border:1px solid var(--line-200);border-radius:var(--r-sm);background:var(--surface-soft)}
+.camp-detail .k{font-size:.68rem;color:var(--ink-500);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.camp-detail .v{margin-top:3px;font-size:.85rem;font-weight:600;overflow-wrap:anywhere}
+.camp-detail.wide{grid-column:1/-1}
+.dose-status{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.profile-panel{max-width:1000px}
+.profile-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--line-200)}
+.profile-person{display:flex;align-items:center;gap:12px;min-width:0}
+.profile-avatar{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--brand-50);color:var(--brand-700);font-weight:700;font-size:1rem;flex:0 0 48px}
+.profile-summary h3{font-size:1rem}
+.profile-summary .muted{font-size:.8rem;overflow-wrap:anywhere}
+.profile-section{margin-top:20px}
+.profile-section h3{font-size:.9rem;margin-bottom:12px}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 12px}
+.profile-item{min-width:0;padding:11px 13px;border:1px solid var(--line-200);border-radius:var(--r-sm);background:var(--surface-soft)}
+.profile-label{font-size:.68rem;color:var(--ink-500);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.profile-value{margin-top:4px;font-size:.85rem;font-weight:600;overflow-wrap:anywhere;white-space:pre-wrap}
+.profile-edit-field{margin:0!important}
+.profile-edit-field>span{font-size:.68rem!important;text-transform:uppercase;letter-spacing:.04em}
+.profile-edit-field input,.profile-edit-field textarea{margin-top:4px}
+.profile-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--line-200)}
+@media(max-width:640px){.profile-grid{grid-template-columns:1fr}.profile-summary{align-items:flex-start}}
+@media(max-width:560px){.camp-details-grid{grid-template-columns:1fr}.camp-detail.wide{grid-column:auto}}
 
 .auth{min-height:100dvh;display:grid;grid-template-columns:1fr 1fr}
 .auth-brand{background:linear-gradient(160deg,var(--brand-700),var(--brand-600));color:#fff;padding:40px 44px;display:flex;flex-direction:column;justify-content:space-between}
@@ -209,19 +253,25 @@ table.tbl tbody tr:hover{background:var(--surface-soft)}
 .demo-box h4{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-500);margin-bottom:10px;font-weight:700}
 .demo-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-200);font-size:.78rem;flex-wrap:wrap}
 .demo-row:last-child{border-bottom:none}
+.demo-row .demo-login{padding:5px 9px;font-size:.7rem;flex:0 0 auto}
 .demo-row code{background:var(--surface);border:1px solid var(--line-200);padding:2px 6px;border-radius:4px;font-size:.72rem;font-family:ui-monospace,monospace}
 .link-btn{color:var(--brand-700);font-weight:600;font-size:.74rem;padding:0 0 0 4px}
 @media(max-width:900px){.auth{grid-template-columns:1fr}.auth-brand{display:none}.auth-panel{padding:32px 20px 40px;align-items:flex-start}}
 
-.context-banner{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r-md);border:1px solid var(--line-200);margin-bottom:18px;background:var(--surface-soft)}
-.context-banner .cb-ic{width:36px;height:36px;border-radius:var(--r-sm);background:var(--surface);display:grid;place-items:center;flex:0 0 36px;border:1px solid var(--line-200)}
-.context-banner h4{font-size:.88rem;font-weight:600;margin-bottom:2px}
-.context-banner p{font-size:.79rem;color:var(--ink-600);line-height:1.5}
-.cb-warn{background:var(--warn-50);border-color:#fde68a}
-.cb-follow{background:#fff7ed;border-color:#fed7aa}
-.cb-geo{background:#ecfeff;border-color:#a5f3fc}
-.cb-voice{background:var(--purple-50);border-color:#ddd6fe}
-.cb-live{background:var(--ok-50);border-color:#a7f3d0}
+.context-banner{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-radius:var(--r-md);border:1px solid var(--line-200);border-left:3px solid var(--brand-600);margin-bottom:18px;background:var(--surface);box-shadow:var(--shadow-xs)}
+.context-banner .cb-ic{width:34px;height:34px;border-radius:var(--r-sm);background:var(--brand-50);color:var(--brand-700);display:grid;place-items:center;flex:0 0 34px;border:1px solid var(--brand-100)}
+.context-banner h4{font-size:.88rem;font-weight:700;margin-bottom:3px;color:var(--ink-900)}
+.context-banner p{font-size:.79rem;color:var(--ink-600);line-height:1.55}
+.cb-warn{background:var(--surface);border-color:var(--line-200);border-left-color:var(--warn-600)}
+.cb-warn .cb-ic{background:var(--warn-50);border-color:#fde68a;color:var(--warn-700)}
+.cb-follow{background:var(--surface);border-color:var(--line-200);border-left-color:var(--brand-600)}
+.cb-follow .cb-ic{background:var(--brand-50);border-color:var(--brand-100);color:var(--brand-700)}
+.cb-geo{background:var(--surface);border-color:var(--line-200);border-left-color:#0e7490}
+.cb-geo .cb-ic{background:#ecfeff;border-color:#a5f3fc;color:#0e7490}
+.cb-voice{background:var(--surface);border-color:var(--line-200);border-left-color:var(--purple-700)}
+.cb-voice .cb-ic{background:var(--purple-50);border-color:#ddd6fe;color:var(--purple-700)}
+.cb-live{background:var(--surface);border-color:var(--line-200);border-left-color:var(--ok-600)}
+.cb-live .cb-ic{background:var(--ok-50);border-color:#a7f3d0;color:var(--ok-700)}
 .disclaimer-box{margin-top:14px;padding:12px 14px;border-radius:var(--r-sm);background:var(--surface-soft);border:1px solid var(--line-200);font-size:.74rem;color:var(--ink-500);line-height:1.6}
 
 .timeline{position:relative;padding-left:24px}
@@ -367,7 +417,7 @@ function priorityBadge(p){
   return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
 }
 function statusBadge(s){
-  const m={new:['info','New'],needs_verification:['violet','Needs Verification'],assigned:['brand','Assigned'],awaiting_response:['warn','Awaiting Response'],resolved:['ok','Resolved'],unable_to_confirm:['gray','Unable to Confirm'],completed:['ok','Completed'],overdue:['danger','Overdue'],due:['warn','Due soon'],upcoming:['gray','Upcoming'],offline_draft:['warn','Offline draft'],pending_review:['info','Waiting for review'],approved:['ok','Approved'],rejected:['danger','Needs changes']};
+  const m={new:['info','New'],needs_verification:['violet','Needs Verification'],assigned:['brand','Assigned'],awaiting_response:['warn','Awaiting Response'],resolved:['ok','Resolved'],unable_to_confirm:['gray','Unable to Confirm'],completed:['ok','Completed'],overdue:['danger','Overdue'],due:['warn','Due soon'],upcoming:['gray','Upcoming'],offline_draft:['warn','Saved offline'],pending_review:['info','Waiting for admin'],approved:['ok','Verified'],rejected:['danger','Changes requested']};
   const [c,l]=m[s]||['gray',s];
   return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
 }
@@ -377,7 +427,7 @@ const KEY = 'vaxreach.data.v1';
 const SESSION = 'vaxreach.session.v1';
 const Store = {
   load(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; } },
-  save(db){ try { localStorage.setItem(KEY, JSON.stringify(db)); return true; } catch(e){ toast('Storage full — draft could not be saved', 'err'); return false; } },
+  save(db){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast('Storage full', 'err'); } },
   clear(){ localStorage.removeItem(KEY); localStorage.removeItem(SESSION); }
 };
 
@@ -553,34 +603,17 @@ function seed(){
 /* ============ DB ============ */
 let DB = Store.load();
 if(!DB) { DB = seed(); Store.save(DB); }
-else {
-  migrateChildAccounts(DB);
-  migrateCaseScores(DB);
-  DB.vaccineDrafts = Array.isArray(DB.vaccineDrafts) ? DB.vaccineDrafts : [];
-  DB.vaccineDrafts.forEach(d=>{
-    if(!d.status) d.status = d.syncedAt ? 'pending_review' : 'offline_draft';
-    if(!Array.isArray(d.reviewHistory)) d.reviewHistory = [];
-  });
-  Store.save(DB);
-}
+else { migrateChildAccounts(DB); migrateCaseScores(DB); if(!Array.isArray(DB.vaccineDrafts)) DB.vaccineDrafts=[]; Store.save(DB); }
 
-function save(){ return Store.save(DB); }
-
+function save(){ Store.save(DB); }
 function queueOfflineVaccinationDrafts(){
-  if(!navigator.onLine) return 0;
-  const waiting = (DB.vaccineDrafts||[]).filter(d=>d.status==='offline_draft');
-  if(!waiting.length) return 0;
-  const now = new Date().toISOString();
-  waiting.forEach(d=>{
-    d.status = 'pending_review';
-    d.syncedAt = now;
-    d.updatedAt = now;
-    d.reviewHistory = Array.isArray(d.reviewHistory) ? d.reviewHistory : [];
-    d.reviewHistory.push({action:'queued_for_admin_review',at:now});
-  });
-  DB.audit.unshift({id:genId('a'),at:now,actorName:'System',action:`${waiting.length} offline vaccination draft${waiting.length===1?'':'s'} queued for admin review`});
+  if(!navigator.onLine||!Array.isArray(DB.vaccineDrafts)) return 0;
+  const now=new Date().toISOString();
+  const queued=DB.vaccineDrafts.filter(d=>d.status==='offline_draft');
+  if(!queued.length) return 0;
+  queued.forEach(d=>{d.status='pending_review';d.syncedAt=now;d.updatedAt=now;});
   save();
-  return waiting.length;
+  return queued.length;
 }
 
 function getSession(){
@@ -637,7 +670,7 @@ function enrichCase(c){
 /* ============ APP ============ */
 const App = {
   state:{
-    user:null, screen:'loading', view:'dashboard', params:{},
+    user:null, screen:'loading', view:'dashboard', params:{}, profileEditing:false, offlineDraftEditId:null,
     online:navigator.onLine, pendingCount:0,
     voiceLang:'en', voiceSupported:!!(window.SpeechRecognition||window.webkitSpeechRecognition),
     voiceTranscript:'', voiceResponse:'', voiceAction:'',
@@ -649,17 +682,9 @@ const App = {
     const u = currentUser();
     this.state.user = u;
     this.state.screen = u ? 'app' : 'landing';
-    this.state.online = navigator.onLine;
-    queueOfflineVaccinationDrafts();
-    window.addEventListener('online', () => this.handleConnectivityChange(true));
-    window.addEventListener('offline', () => this.handleConnectivityChange(false));
-    this.render();
-  },
-
-  handleConnectivityChange(isOnline){
-    this.state.online = isOnline;
-    const queued = isOnline ? queueOfflineVaccinationDrafts() : 0;
-    if(queued) toast(`${queued} offline draft${queued===1?'':'s'} ready for administrator review`);
+    if(navigator.onLine) queueOfflineVaccinationDrafts();
+    window.addEventListener('online', () => { this.state.online = true; queueOfflineVaccinationDrafts(); this.render(); });
+    window.addEventListener('offline', () => { this.state.online = false; this.render(); });
     this.render();
   },
 
@@ -690,6 +715,7 @@ const App = {
   },
 
   goto(view, params){
+    if(view!=='profile') this.state.profileEditing = false;
     this.state.view = view;
     this.state.params = params || {};
     this.render();
@@ -718,9 +744,15 @@ const App = {
   doLogin(event){
     event.preventDefault();
     const f = event.target;
-    const email = f.email.value.trim().toLowerCase();
-    const pw = f.password.value;
-    const user = DB.users.find(u=>u.email.toLowerCase()===email && u.password===hashPw(pw));
+    this.loginWithCredentials(f.email.value.trim().toLowerCase(), f.password.value);
+  },
+
+  demoLogin(email,pw){
+    this.loginWithCredentials(email,pw);
+  },
+
+  loginWithCredentials(email,pw){
+    const user = DB.users.find(u=>u.email.toLowerCase()===email.trim().toLowerCase() && u.password===hashPw(pw));
     if(!user){ toast('Invalid email or password', 'err'); return; }
     if(!user.active){ toast('Account disabled', 'err'); return; }
     setSession(user.id);
@@ -865,159 +897,128 @@ const App = {
     this.render();
   },
 
-  openAdministerModal(scheduleId, childId, vaccineCode, draftId=''){
-    const draft = draftId ? DB.vaccineDrafts.find(d=>d.id===draftId) : null;
-    const s = DB.schedules.find(x=>x.id===scheduleId);
-    if(!s || s.administeredDate){ toast('This vaccination record is already complete', 'err'); return; }
-    if(draftId && (!draft || draft.status!=='rejected' || (draft.workerId!==this.state.user?.id && this.state.user?.role!=='admin'))){ toast('Only a rejected draft can be edited', 'err'); return; }
-    const duplicate = DB.vaccineDrafts.find(d=>d.scheduleId===scheduleId && d.id!==draftId && ['offline_draft','pending_review'].includes(d.status));
-    if(duplicate){ toast('A draft for this dose is already waiting for review', 'err'); return; }
-    openModal(`<div class="modal-head"><h3>Record vaccination</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
-      <div class="modal-body">
-        <p class="small muted" style="margin-bottom:14px">${esc(vaccineCode)} — demo schedule, verify with an authorised health professional.</p>
-        <div class="context-banner ${navigator.onLine?'cb-follow':'cb-warn'}"><div class="cb-ic">${icon(navigator.onLine?'info':'wifiOff')}</div><div><h4>${navigator.onLine?'Administrator review required':'Offline draft'}</h4><p>${navigator.onLine?'Saving queues this record for an administrator. It will not change the official schedule until approved.':'This draft is saved on this device and will move to the administrator review queue when the connection returns.'}</p></div></div>
-        <form onsubmit="App.saveVaccination(event,'${scheduleId}','${draftId}')">
-          <label class="field"><span>Date administered</span><input type="date" name="date" value="${esc(draft?.administeredDate||todayISO())}" max="${todayISO()}" required /></label>
-          <label class="field"><span>Vaccine batch number (optional)</span><input type="text" name="batchNumber" value="${esc(draft?.batchNumber||'')}" maxlength="80" /></label>
-          <label class="field"><span>Notes (optional)</span><textarea name="notes" rows="2" maxlength="500">${esc(draft?.notes||'')}</textarea></label>
-          <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">${draft?'Resubmit for review':'Save draft'}</button></div>
-        </form>
-      </div>`);
+  openAdministerModal(scheduleId, childId, vaccineCode){
+    this.goto('offline',{scheduleId,childId,vaccineCode});
   },
-  saveVaccination(event, scheduleId, draftId=''){
+  saveOfflineVaccinationDraft(event){
     event.preventDefault();
-    const s = DB.schedules.find(x=>x.id===scheduleId);
-    if(!s) return;
-    const user = this.state.user;
-    const child = DB.children.find(c=>c.id===s.childId);
-    if(!user || !['worker','admin'].includes(user.role) || !canAccessChild(user,child)) return;
-    if(s.administeredDate){ toast('This vaccination record is already complete', 'err'); return; }
-    const existing = draftId ? DB.vaccineDrafts.find(d=>d.id===draftId) : null;
-    if(draftId && (!existing || existing.status!=='rejected' || (existing.workerId!==user.id && user.role!=='admin'))){ toast('Only your rejected draft can be resubmitted', 'err'); return; }
-    const duplicate = DB.vaccineDrafts.find(d=>d.scheduleId===scheduleId && d.id!==draftId && ['offline_draft','pending_review'].includes(d.status));
-    if(duplicate){ toast('A draft for this dose is already waiting for review', 'err'); return; }
-    const now = new Date().toISOString();
-    const online = navigator.onLine;
-    if(user.role==='admin' && online && !existing){
-      s.administeredDate = event.target.date.value;
-      s.status = 'completed';
-      s.administeredBy = user.id;
-      s.verified = true;
-      s.verifiedBy = user.id;
-      s.verifiedAt = now;
-      s.batchNumber = event.target.batchNumber.value.trim();
-      s.notes = event.target.notes.value.trim();
-      DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:`Vaccination recorded and verified: ${s.vaccineCode}`});
-      if(!save()) return;
-      closeModal();
-      toast('Vaccination recorded and verified');
-      this.render();
-      return;
-    }
-    const nextStatus = online ? 'pending_review' : 'offline_draft';
-    const details = {
-      scheduleId:s.id,childId:s.childId,vaccineCode:s.vaccineCode,
-      administeredDate:event.target.date.value,
-      batchNumber:event.target.batchNumber.value.trim(),notes:event.target.notes.value.trim(),
-      workerId:user.id,workerName:user.name,status:nextStatus,updatedAt:now,
-      syncedAt:online?now:null,reviewedAt:null,reviewedBy:null,reviewNote:''
-    };
-    if(existing){
-      Object.assign(existing,details);
-      existing.reviewHistory = Array.isArray(existing.reviewHistory) ? existing.reviewHistory : [];
-      existing.reviewHistory.push({action:'resubmitted',by:user.id,at:now});
-    } else {
-      DB.vaccineDrafts.unshift({id:genId('vd'),...details,createdAt:now,reviewHistory:[]});
-    }
-    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:online?'Vaccination draft queued for administrator review':'Vaccination draft saved offline'});
-    if(!save()) return;
-    closeModal();
-    toast(online?'Draft sent for administrator review':'Draft saved on this device');
+    const user=this.state.user;
+    if(!user||user.role!=='worker'){toast('Only health workers can submit vaccination drafts','err');return;}
+    const form=event.currentTarget;
+    const scheduleId=form.elements.scheduleId.value;
+    const s=DB.schedules.find(x=>x.id===scheduleId);
+    const child=s&&DB.children.find(x=>x.id===s.childId);
+    const allowedChildren=new Set(scopeChildren(user).map(c=>c.id));
+    if(!s||!child||!allowedChildren.has(child.id)||s.administeredDate){toast('Choose an eligible child and vaccine dose','err');return;}
+    const administeredDate=form.elements.date.value;
+    if(!administeredDate||administeredDate>todayISO()){toast('Enter a valid vaccination date','err');return;}
+    const now=new Date().toISOString();
+    const editing=this.state.offlineDraftEditId?DB.vaccineDrafts.find(d=>d.id===this.state.offlineDraftEditId&&d.workerId===user.id&&d.status==='rejected'):null;
+    const values={scheduleId:s.id,childId:child.id,vaccineCode:s.vaccineCode,administeredDate,notes:form.elements.notes.value.trim(),workerId:user.id,workerName:user.name,status:navigator.onLine?'pending_review':'offline_draft',updatedAt:now,syncedAt:navigator.onLine?now:null,reviewNote:''};
+    if(this.state.offlineDraftEditId&&!editing){toast('This draft can no longer be edited','err');this.state.offlineDraftEditId=null;this.render();return;}
+    if(editing) Object.assign(editing,values);
+    else DB.vaccineDrafts.unshift({id:genId('vd'),...values,createdAt:now,reviewedAt:null,reviewedBy:null});
+    save();
+    this.state.offlineDraftEditId=null;
+    this.state.params={};
+    toast(navigator.onLine?'Draft sent for administrator review':'Vaccination saved as an offline draft');
     this.render();
   },
-
-  openReviewVaccinationDraft(draftId){
-    if(this.state.user?.role!=='admin'){ toast('Administrator access required', 'err'); return; }
-    if(!navigator.onLine){ toast('Reconnect before reviewing vaccination drafts', 'err'); return; }
-    const draft = DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
-    if(!draft) return;
-    const child = DB.children.find(c=>c.id===draft.childId);
-    openModal(`<div class="modal-head"><h3>Review vaccination draft</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
-      <div class="modal-body">
-        <div class="kv" style="margin-bottom:14px">
-          <div class="kv-i"><div class="k">Child</div><div class="v">${esc(child?.name||'—')}</div></div>
-          <div class="kv-i"><div class="k">Vaccine</div><div class="v">${esc(draft.vaccineCode)}</div></div>
-          <div class="kv-i"><div class="k">Date administered</div><div class="v">${fmtDate(draft.administeredDate)}</div></div>
-          <div class="kv-i"><div class="k">Worker</div><div class="v">${esc(draft.workerName||'—')}</div></div>
-          <div class="kv-i"><div class="k">Batch number</div><div class="v">${esc(draft.batchNumber||'—')}</div></div>
-          <div class="kv-i"><div class="k">Notes</div><div class="v">${esc(draft.notes||'—')}</div></div>
-        </div>
-        <div class="disclaimer-box">Approval updates the child's schedule and marks this record as verified by you. Check the details before approving.</div>
-        <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Close</button><button type="button" class="btn danger" onclick="App.openRejectVaccinationDraft('${draft.id}')">Request changes</button><button type="button" class="btn" onclick="App.approveVaccinationDraft('${draft.id}')">Approve & verify</button></div>
-      </div>`);
+  editOfflineVaccinationDraft(id){
+    const d=DB.vaccineDrafts.find(x=>x.id===id&&x.workerId===this.state.user?.id&&x.status==='rejected');
+    if(!d){toast('Only drafts needing changes can be edited','err');return;}
+    this.state.offlineDraftEditId=id;
+    this.goto('offline',{scheduleId:d.scheduleId});
   },
-
-  approveVaccinationDraft(draftId){
-    const user = this.state.user;
-    const draft = DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
-    if(user?.role!=='admin'){ toast('Administrator access required', 'err'); return; }
-    if(!navigator.onLine){ toast('Reconnect before reviewing vaccination drafts', 'err'); return; }
-    if(!draft){ toast('This draft is no longer awaiting review', 'err'); return; }
-    const schedule = DB.schedules.find(s=>s.id===draft.scheduleId);
-    if(!schedule || schedule.administeredDate){ toast('The schedule has changed. Review this draft and request changes if needed.', 'err'); return; }
-    const now = new Date().toISOString();
-    draft.status='approved';
-    draft.reviewedAt=now;
-    draft.reviewedBy=user.id;
-    draft.reviewNote='';
-    draft.reviewHistory.push({action:'approved',by:user.id,at:now});
+  cancelOfflineVaccinationDraftEdit(){this.state.offlineDraftEditId=null;this.state.params={};this.render();},
+  approveVaccinationDraft(id){
+    const user=this.state.user;
+    if(!user||user.role!=='admin'){toast('Administrator access is required','err');return;}
+    if(!navigator.onLine){toast('Reconnect before verifying drafts','err');return;}
+    const draft=DB.vaccineDrafts.find(d=>d.id===id&&d.status==='pending_review');
+    const schedule=draft&&DB.schedules.find(s=>s.id===draft.scheduleId);
+    if(!draft||!schedule||schedule.administeredDate){toast('This dose cannot be verified in its current state','err');return;}
+    const now=new Date().toISOString();
     schedule.administeredDate=draft.administeredDate;
     schedule.status='completed';
     schedule.administeredBy=draft.workerId;
-    schedule.batchNumber=draft.batchNumber||'';
-    schedule.notes=draft.notes||'';
-    schedule.verified=true;
+    schedule.notes=draft.notes;
     schedule.verifiedBy=user.id;
     schedule.verifiedAt=now;
-    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:`Vaccination draft approved and verified: ${draft.vaccineCode}`});
-    if(!save()) return;
-    closeModal();
-    toast('Draft approved; schedule updated');
-    this.render();
-  },
-
-  openRejectVaccinationDraft(draftId){
-    if(this.state.user?.role!=='admin' || !navigator.onLine){ toast('Reconnect as an administrator to review this draft', 'err'); return; }
-    const draft=DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
-    if(!draft) return;
-    openModal(`<div class="modal-head"><h3>Request changes</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
-      <div class="modal-body"><p class="small muted" style="margin-bottom:12px">${esc(draft.vaccineCode)} for ${esc(DB.children.find(c=>c.id===draft.childId)?.name||'the child')} will remain unverified.</p>
-        <form onsubmit="App.rejectVaccinationDraft(event,'${draft.id}')">
-          <label class="field"><span>What should the worker correct?</span><textarea name="reviewNote" rows="3" maxlength="500" required></textarea></label>
-          <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.openReviewVaccinationDraft('${draft.id}')">Back</button><button class="btn danger" type="submit">Request changes</button></div>
-        </form>
-      </div>`);
-  },
-
-  rejectVaccinationDraft(event,draftId){
-    event.preventDefault();
-    const user=this.state.user;
-    const draft=DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
-    const note=event.target.reviewNote.value.trim();
-    if(user?.role!=='admin' || !navigator.onLine || !draft || !note){ if(!navigator.onLine) toast('Reconnect before reviewing vaccination drafts', 'err'); return; }
-    const now=new Date().toISOString();
-    draft.status='rejected';
+    draft.status='approved';
     draft.reviewedAt=now;
     draft.reviewedBy=user.id;
-    draft.reviewNote=note;
-    draft.reviewHistory.push({action:'changes_requested',by:user.id,at:now,note});
-    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:`Changes requested for vaccination draft: ${draft.vaccineCode}`});
-    if(!save()) return;
-    closeModal();
-    toast('Changes requested from worker');
+    draft.updatedAt=now;
+    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:'Verified vaccination draft '+draft.id});
+    save();
+    toast('Vaccination draft verified');
+    this.render();
+  },
+  requestVaccinationDraftChanges(id){
+    const user=this.state.user;
+    if(!user||user.role!=='admin'){toast('Administrator access is required','err');return;}
+    if(!navigator.onLine){toast('Reconnect before reviewing drafts','err');return;}
+    const draft=DB.vaccineDrafts.find(d=>d.id===id&&d.status==='pending_review');
+    if(!draft){toast('This draft is no longer awaiting review','err');return;}
+    const note=prompt('Enter the changes required before this vaccination can be verified:');
+    if(note===null) return;
+    if(!note.trim()){toast('Enter a reason for requesting changes','err');return;}
+    const now=new Date().toISOString();
+    draft.status='rejected';
+    draft.reviewNote=note.trim();
+    draft.reviewedAt=now;
+    draft.reviewedBy=user.id;
+    draft.updatedAt=now;
+    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:'Requested changes for vaccination draft '+draft.id});
+    save();
+    toast('Changes requested from the health worker');
     this.render();
   },
 
+  downloadVaccinationCertificate(scheduleId){
+    const dose = DB.schedules.find(s=>s.id===scheduleId);
+    if(!dose || !dose.administeredDate){ toast('A certificate is available after a vaccination is recorded', 'err'); return; }
+    const child = DB.children.find(c=>c.id===dose.childId);
+    if(!child || (this.state.user.role==='child' && child.accountId!==this.state.user.id)){ toast('Access denied', 'err'); return; }
+    const recorder = dose.administeredBy ? DB.users.find(u=>u.id===dose.administeredBy) : null;
+    const recordRef = `VR-${dose.id}-${hashPw(dose.administeredDate).slice(1,7).toUpperCase()}`;
+    const certificate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vaccination certificate — ${esc(child.name)}</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:32px;background:#f1f5f9;color:#0f172a;font:15px/1.55 Arial,sans-serif}.certificate{max-width:760px;margin:0 auto;padding:42px;background:#fff;border:1px solid #cbd5e1;border-top:8px solid #0d9488;border-radius:10px}.brand{font-size:13px;font-weight:700;color:#0f766e;letter-spacing:.08em;text-transform:uppercase}.verified{display:inline-block;margin:28px 0 12px;padding:6px 12px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:12px;font-weight:700}.certificate h1{margin:0 0 8px;font-size:30px}.intro{color:#475569}.details{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:28px 0}.item{padding:13px;border:1px solid #e2e8f0;border-radius:6px}.label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em}.value{margin-top:4px;font-weight:700}.notice{margin-top:28px;padding:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;color:#78350f;font-size:12px}.actions{margin-top:24px}.actions button{padding:10px 16px;border:0;border-radius:5px;background:#0d9488;color:white;font-weight:700;cursor:pointer}@media(max-width:600px){body{padding:12px}.certificate{padding:24px}.details{grid-template-columns:1fr}}@media print{body{padding:0;background:#fff}.certificate{max-width:none;border:1px solid #94a3b8;border-top:8px solid #0d9488;border-radius:0}.actions{display:none}}
+</style>
+</head>
+<body><main class="certificate">
+<div class="brand">VaxReach · Immunisation Follow-up</div>
+<div class="verified">✓ RECORD MATCHED TO LOCAL DEMO DATA</div>
+<h1>Vaccination Record Certificate</h1>
+<p class="intro">This certificate records a completed vaccination entry for the child account shown below.</p>
+<div class="details">
+<div class="item"><div class="label">Child</div><div class="value">${esc(child.name)}</div></div>
+<div class="item"><div class="label">VaxReach ID</div><div class="value">${esc(child.uniqueId)}</div></div>
+<div class="item"><div class="label">Vaccine</div><div class="value">${esc(dose.vaccineCode)}</div></div>
+<div class="item"><div class="label">Date recorded</div><div class="value">${fmtDate(dose.administeredDate)}</div></div>
+<div class="item"><div class="label">Recorded by</div><div class="value">${esc(recorder?recorder.name:'Not listed in this demo record')}</div></div>
+<div class="item"><div class="label">Record reference</div><div class="value">${esc(recordRef)}</div></div>
+<div class="item"><div class="label">Community / district</div><div class="value">${esc(child.community)} · ${esc(child.district)}</div></div>
+<div class="item"><div class="label">Certificate generated</div><div class="value">${fmtDate(todayISO())}</div></div>
+</div>
+<div class="notice"><strong>Demo certificate.</strong> The record was matched to the data stored in this browser. This file is not an official immunisation certificate and does not confirm clinical verification. Confirm vaccination records with an authorised health professional.</div>
+<div class="actions"><button type="button" onclick="window.print()">Print / Save as PDF</button></div>
+</main></body>
+</html>`;
+    const blob = new Blob([certificate], {type:'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vaxreach-certificate-${child.id}-${dose.vaccineCode}.html`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    toast('Certificate downloaded');
+  },
   submitRequest(event){
     event.preventDefault();
     const f = event.target;
@@ -1051,14 +1052,37 @@ const App = {
     this.render();
   },
 
+  toggleProfileEdit(){ this.state.profileEditing=true; this.render(); },
+  cancelProfileEdit(){ this.state.profileEditing=false; this.render(); },
+
   saveProfile(event){
     event.preventDefault();
     const f = event.target;
+    const nameInput = f.elements.namedItem('name');
+    const phoneInput = f.elements.namedItem('phone');
+    const facilityInput = f.elements.namedItem('facility');
+    const guardianInput = f.elements.namedItem('guardianName');
     const u = DB.users.find(x=>x.id===this.state.user.id);
-    u.name = f.name.value.trim();
-    if(f.phone) u.phone = f.phone.value;
-    if(f.facility) u.facility = f.facility.value;
+    if(!u || !nameInput) return;
+    const name = nameInput.value.trim();
+    if(!name){ toast('Name is required','err'); return; }
+    u.name = name;
+    if(phoneInput) u.phone = phoneInput.value.trim();
+    if(facilityInput) u.facility = facilityInput.value.trim();
+    if(u.role==='child'){
+      const child = childRecordFor(u);
+      if(child){
+        child.name = u.name;
+        child.phone = u.phone || '';
+        if(guardianInput){
+          child.guardianName = guardianInput.value.trim();
+          const household = DB.households.find(h=>h.id===child.householdId);
+          if(household){ household.head=child.guardianName; household.phone=child.phone; }
+        }
+      }
+    }
     this.state.user = u;
+    this.state.profileEditing = false;
     save();
     toast('Profile saved');
     this.render();
@@ -1172,11 +1196,6 @@ const App = {
   shell(u, title, navHtml, content){
     const roleLabel = {admin:'Administrator', worker:'Health Worker', child:'Child'}[u.role];
     const roleIcon = {admin:'shield', worker:'activity', child:'baby'}[u.role];
-    const draftCount = u.role==='admin'
-      ? DB.vaccineDrafts.filter(d=>['pending_review','offline_draft'].includes(d.status)).length
-      : u.role==='worker'
-        ? DB.vaccineDrafts.filter(d=>d.workerId===u.id && ['offline_draft','pending_review','rejected'].includes(d.status)).length
-        : 0;
     return `<div class="shell" data-role="${u.role}">
       <div class="scrim" id="scrim" onclick="App.toggleSidebar(false)"></div>
       <aside class="sidebar" id="sidebar">
@@ -1196,7 +1215,6 @@ const App = {
           <div class="tb-title">${esc(title)}</div>
           <div class="tb-right">
             <span class="badge ${this.state.online ? 'ok' : 'warn'}">${this.state.online ? 'Online' : 'Offline'}</span>
-            ${draftCount?`<button class="btn ghost sm" onclick="App.goto('sync')">${draftCount} draft${draftCount===1?'':'s'}</button>`:''}
             <span class="role-pill">${icon(roleIcon)} ${roleLabel}</span>
             <button class="tb-avatar" onclick="App.goto('profile')"><div class="avatar">${esc(initials(u.name))}</div><span>${esc(u.name.split(' ')[0])}</span></button>
           </div>
@@ -1208,18 +1226,60 @@ const App = {
 
   landingView(){
     return `<div class="land">
-      <nav class="land-nav">
+      <nav class="land-nav" aria-label="Main navigation">
         <div class="land-brand"><div class="logo-mark">${LOGO}</div> VaxReach</div>
+        <div class="land-nav-links"><a href="#about">About</a><a href="#how-it-works">How it works</a><a href="#roles">Who it serves</a><a href="#demo-accounts">Demo accounts</a></div>
         <div class="land-nav-actions"><button class="btn ghost sm" onclick="App.showAuth()">Sign in</button></div>
       </nav>
       <section class="land-hero">
         <span class="land-eyebrow">Odisha immunisation follow-up · Demo</span>
         <h1>Every child. <span class="accent">Every vaccine.</span> On time.</h1>
-        <p class="land-lead">A single-file working demo. Save vaccination entries as offline drafts, then send them to administrator review when you reconnect. Demo data stays in this browser.</p>
-        <div class="land-hero-actions"><button class="btn" onclick="App.showAuth()">Sign in to demo</button></div>
+        <p class="land-lead">VaxReach is a prototype for helping families and health teams coordinate childhood immunisation follow-up. Explore sample child records, outreach workflows, camps and reports.</p>
+        <div class="land-hero-actions"><button class="btn" onclick="App.showAuth()">Sign in to demo</button><a class="btn ghost" href="#how-it-works">How it works</a></div>
       </section>
-      <section class="land-section">
+
+      <section class="land-section" id="about">
+        <h2 class="land-section-title">About VaxReach</h2>
+        <p class="land-section-intro">VaxReach brings family-facing vaccination records and health-team follow-up tools into one simple demonstration. It is designed to make the next step in a follow-up easier to see and coordinate.</p>
+        <div class="land-info-grid">
+          <article class="land-info-card"><div class="land-info-icon">${icon('baby')}</div><h3>Child-centred records</h3><p>Each child account opens one sample child record, with a schedule view and follow-up information for that child.</p></article>
+          <article class="land-info-card"><div class="land-info-icon">${icon('target')}</div><h3>Coordinated follow-up</h3><p>Staff can review assigned follow-ups, record contact or visit outcomes, and keep a local history of actions.</p></article>
+          <article class="land-info-card"><div class="land-info-icon">${icon('layers')}</div><h3>Community outreach</h3><p>Browse demo camp listings and organiser contact details to understand planned outreach activity.</p></article>
+        </div>
+      </section>
+
+      <section class="land-section" id="how-it-works">
+        <h2 class="land-section-title">How it works</h2>
+        <p class="land-section-intro">Use the demo accounts to explore each role. The sample data stays in this browser.</p>
+        <div class="land-info-grid">
+          <article class="land-info-card"><div class="land-step-no">1</div><h3>Choose a role</h3><p>Sign in as a family account, health worker or administrator to open the tools available for that role.</p></article>
+          <article class="land-info-card"><div class="land-step-no">2</div><h3>Review the information</h3><p>Families can view one child's sample record. Health workers and administrators can review follow-ups, children, camps and reports.</p></article>
+          <article class="land-info-card"><div class="land-step-no">3</div><h3>Record the next step</h3><p>In the staff demo, update follow-up status, log contact or visit outcomes, and review the resulting local record.</p></article>
+        </div>
+      </section>
+
+      <section class="land-section" id="roles">
+        <h2 class="land-section-title">Who it serves</h2>
+        <div class="land-info-grid">
+          <article class="land-info-card"><div class="land-info-icon">${icon('home')}</div><h3>Families and children</h3><p>See a linked child's sample vaccination schedule, follow-up status, nearby camps and support options.</p></article>
+          <article class="land-info-card"><div class="land-info-icon">${icon('activity')}</div><h3>Health workers</h3><p>Review assigned cases and children, record outreach activity, and access camp and support information.</p></article>
+          <article class="land-info-card"><div class="land-info-icon">${icon('shield')}</div><h3>Administrators</h3><p>Review the wider demo workload, user list, reports, audit history and local schedule settings.</p></article>
+        </div>
+      </section>
+
+      <section class="land-section" id="features">
+        <h2 class="land-section-title">Explore the demo</h2>
+        <div class="land-info-grid">
+          <article class="land-info-card"><h3>Vaccination records</h3><p>View dose dates and status for the linked sample child. Demo certificates are matched to local records and are not official.</p></article>
+          <article class="land-info-card"><h3>Follow-up workflow</h3><p>Explore assigned work, case history, reasons, notes and simulated contact or visit outcomes.</p></article>
+          <article class="land-info-card"><h3>Camps and support</h3><p>Open camp details and organiser contacts, or use the support inbox and family help assistant.</p></article>
+          <article class="land-info-card"><h3>Reports and data</h3><p>Review local summary reports and export demo data from the staff dashboards.</p></article>
+        </div>
+      </section>
+
+      <section class="land-section" id="demo-accounts">
         <h2 class="land-section-title">Demo accounts</h2>
+        <p class="land-section-intro">Choose a sample account to fill its sign-in details, then continue from the sign-in page.</p>
         <div class="land-demo-grid">
           <button class="land-demo-card" onclick="App.fillLogin('admin@vaxreach.demo','admin123')">
             <strong>Administrator</strong><code>admin@vaxreach.demo</code><code>admin123</code>
@@ -1232,8 +1292,14 @@ const App = {
           </button>
         </div>
       </section>
+
+      <section class="land-section" id="demo-notice">
+        <h2 class="land-section-title">Demo data and limitations</h2>
+        <div class="land-demo-note"><strong>Prototype only.</strong> All people and records are fictional. Data is saved in this browser and is not connected to an official registry. Vaccination schedules and certificates are not clinically verified; SMS, calls and integrations are simulated. Do not enter real patient information.</div>
+      </section>
+      <section class="land-section land-bottom-cta"><h2 class="land-section-title">Explore VaxReach</h2><div class="land-hero-actions"><button class="btn" onclick="App.showAuth()">Sign in to demo</button></div></section>
       <footer class="land-footer">
-        <strong>VaxReach</strong> · Prototype · Data saves in your browser · All records fictional · Not clinically validated
+        <strong>VaxReach</strong> · Prototype · Browser-stored demo data · Fictional records · Not clinically validated
       </footer>
     </div>`;
   },
@@ -1258,11 +1324,11 @@ const App = {
           </form>
           <div class="demo-box">
             <h4>Demo credentials</h4>
-            <div class="demo-row"><span>Admin</span><span><code>admin@vaxreach.demo</code> / <code>admin123</code></span></div>
-            <div class="demo-row"><span>Worker</span><span><code>worker@vaxreach.demo</code> / <code>worker123</code></span></div>
-            <div class="demo-row"><span>Child · Aditya</span><span><code>child@vaxreach.demo</code> / <code>child123</code></span></div>
-            <div class="demo-row"><span>Child · Aahana</span><span><code>aahana@vaxreach.demo</code> / <code>child123</code></span></div>
-            <div class="demo-row"><span>Child · Bibhu</span><span><code>child2@vaxreach.demo</code> / <code>child123</code></span></div>
+            <div class="demo-row"><span>Admin</span><span><code>admin@vaxreach.demo</code> / <code>admin123</code></span><button class="btn ghost sm demo-login" type="button" onclick="App.demoLogin('admin@vaxreach.demo','admin123')" aria-label="Sign in as Admin">Sign in</button></div>
+            <div class="demo-row"><span>Worker</span><span><code>worker@vaxreach.demo</code> / <code>worker123</code></span><button class="btn ghost sm demo-login" type="button" onclick="App.demoLogin('worker@vaxreach.demo','worker123')" aria-label="Sign in as Worker">Sign in</button></div>
+            <div class="demo-row"><span>Child · Aditya</span><span><code>child@vaxreach.demo</code> / <code>child123</code></span><button class="btn ghost sm demo-login" type="button" onclick="App.demoLogin('child@vaxreach.demo','child123')" aria-label="Sign in as Aditya">Sign in</button></div>
+            <div class="demo-row"><span>Child · Aahana</span><span><code>aahana@vaxreach.demo</code> / <code>child123</code></span><button class="btn ghost sm demo-login" type="button" onclick="App.demoLogin('aahana@vaxreach.demo','child123')" aria-label="Sign in as Aahana">Sign in</button></div>
+            <div class="demo-row"><span>Child · Bibhu</span><span><code>child2@vaxreach.demo</code> / <code>child123</code></span><button class="btn ghost sm demo-login" type="button" onclick="App.demoLogin('child2@vaxreach.demo','child123')" aria-label="Sign in as Bibhu">Sign in</button></div>
             <p class="tiny muted">Each child login opens one child's record. Other demo children use their record ID as email (for example, c_4@vaxreach.demo) and password child123.</p>
           </div>
           <div style="margin-top:14px;text-align:center"><button class="link-btn" onclick="App.showLanding()">← Back</button></div>
@@ -1272,6 +1338,42 @@ const App = {
   },
 
   /* ============ VIEWS ============ */
+  view_offline(){
+    const user=this.state.user;
+    if(!user||!['admin','worker'].includes(user.role)) return '<div class="card card-pad">Access denied.</div>';
+    if(user.role==='admin'){
+      const waiting=DB.vaccineDrafts.filter(d=>d.status==='pending_review').sort((a,b)=>String(a.syncedAt||a.createdAt).localeCompare(String(b.syncedAt||b.createdAt)));
+      const offline=DB.vaccineDrafts.filter(d=>d.status==='offline_draft');
+      const reviewed=DB.vaccineDrafts.filter(d=>['approved','rejected'].includes(d.status)).sort((a,b)=>String(b.reviewedAt||'').localeCompare(String(a.reviewedAt||''))).slice(0,10);
+      return `<div class="between" style="margin-bottom:16px"><div><h2>Vaccination review</h2><p class="muted small">Verify worker submissions before they update a child's schedule.</p></div></div>
+        ${!navigator.onLine?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>Offline — review paused</h4><p>Reconnect before verifying submissions. Drafts saved offline move to this review queue when the connection returns.</p></div></div>`:''}
+        <div class="context-banner cb-follow"><div class="cb-ic">${icon('shield')}</div><div><h4>Administrator verification</h4><p>Only verified submissions update the vaccination schedule. This prototype stores drafts in this browser; delivery between devices requires a secure server.</p></div></div>
+        <div class="card"><div class="card-head"><h3>Waiting for review</h3><span class="badge info">${waiting.length}</span></div><div class="table-wrap"><table class="tbl">
+          <thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Health worker</th><th>Notes</th><th></th></tr></thead>
+          <tbody>${waiting.map(d=>{const child=DB.children.find(c=>c.id===d.childId),worker=DB.users.find(w=>w.id===d.workerId);return `<tr><td>${esc(child?.name||'Unknown child')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${esc(worker?.name||d.workerName||'Unknown worker')}</td><td>${esc(d.notes||'—')}</td><td><div class="row"><button class="btn sm" ${navigator.onLine?'':'disabled'} onclick="App.approveVaccinationDraft('${d.id}')">Verify</button><button class="btn ghost sm" ${navigator.onLine?'':'disabled'} onclick="App.requestVaccinationDraftChanges('${d.id}')">Request changes</button></div></td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No submissions are waiting for administrator review.</td></tr>'}</tbody>
+        </table></div></div>
+        ${offline.length?`<div class="card mt16"><div class="card-head"><h3>Saved offline on this browser</h3><span class="badge warn">${offline.length}</span></div><div class="table-wrap"><table class="tbl"><thead><tr><th>Child</th><th>Vaccine</th><th>Health worker</th><th>Saved</th></tr></thead><tbody>${offline.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<tr><td>${esc(child?.name||'Unknown child')}</td><td>${esc(d.vaccineCode)}</td><td>${esc(d.workerName||'Unknown worker')}</td><td>${fmtDT(d.createdAt)}</td></tr>`}).join('')}</tbody></table></div></div>`:''}
+        ${reviewed.length?`<div class="card mt16"><div class="card-head"><h3>Recently reviewed</h3></div><div class="table-wrap"><table class="tbl"><thead><tr><th>Child</th><th>Vaccine</th><th>Status</th><th>Review note</th><th>Reviewed</th></tr></thead><tbody>${reviewed.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<tr><td>${esc(child?.name||'Unknown child')}</td><td>${esc(d.vaccineCode)}</td><td>${statusBadge(d.status)}</td><td>${esc(d.reviewNote||'—')}</td><td>${fmtDT(d.reviewedAt)}</td></tr>`}).join('')}</tbody></table></div></div>`:''}`;
+    }
+
+    const childIds=new Set(scopeChildren(user).map(c=>c.id));
+    const available=DB.schedules.filter(s=>childIds.has(s.childId)&&!s.administeredDate).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+    const editing=this.state.offlineDraftEditId?DB.vaccineDrafts.find(d=>d.id===this.state.offlineDraftEditId&&d.workerId===user.id&&d.status==='rejected'):null;
+    const selectedSchedule=editing?.scheduleId||this.state.params.scheduleId||'';
+    const drafts=DB.vaccineDrafts.filter(d=>d.workerId===user.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
+    const options=available.map(s=>{const child=DB.children.find(c=>c.id===s.childId);return `<option value="${esc(s.id)}" ${s.id===selectedSchedule?'selected':''}>${esc(child?.name||'Unknown child')} · ${esc(s.vaccineCode)} · due ${fmtDate(s.dueDate)}</option>`}).join('');
+    const rows=drafts.map(d=>{const child=DB.children.find(c=>c.id===d.childId);const action=d.status==='rejected'?`<button class="btn ghost sm" onclick="App.editOfflineVaccinationDraft('${d.id}')">Edit and resubmit</button>`:'';return `<tr><td>${esc(child?.name||'Unknown child')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${statusBadge(d.status)}${d.reviewNote?`<div class="tiny muted" style="margin-top:5px">${esc(d.reviewNote)}</div>`:''}</td><td>${fmtDT(d.updatedAt||d.createdAt)}</td><td>${action}</td></tr>`}).join('');
+    return `<div class="between" style="margin-bottom:16px"><div><h2>Offline vaccination drafts</h2><p class="muted small">Enter vaccination details on this page. Submissions remain drafts until an administrator verifies them.</p></div></div>
+      ${navigator.onLine?`<div class="context-banner cb-follow"><div class="cb-ic">${icon('wifi')}</div><div><h4>Connection available</h4><p>New submissions are sent to the administrator review queue. The schedule changes only after verification.</p></div></div>`:`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>Offline — drafts stay on this device</h4><p>Save vaccination details now. When internet returns, the drafts move to the administrator review queue in this browser.</p></div></div>`}
+      <div class="card card-pad" style="margin-bottom:16px"><div class="between" style="margin-bottom:14px"><div><h3>${editing?'Edit vaccination draft':'Record vaccination'}</h3><p class="small muted">Select a child and scheduled vaccine dose. This form is the only place to enter vaccination details.</p></div></div>
+        ${available.length?`<form onsubmit="App.saveOfflineVaccinationDraft(event)"><label class="field"><span>Child and vaccine dose</span><select name="scheduleId" required>${options}</select></label>
+          <div class="form-grid"><label class="field"><span>Date administered</span><input type="date" name="date" value="${esc(editing?.administeredDate||todayISO())}" max="${todayISO()}" required /></label><label class="field"><span>Notes</span><textarea name="notes" rows="2">${esc(editing?.notes||'')}</textarea></label></div>
+          <div class="row" style="justify-content:flex-end">${editing?'<button class="btn ghost" type="button" onclick="App.cancelOfflineVaccinationDraftEdit()">Cancel</button>':''}<button class="btn" type="submit">${navigator.onLine?'Submit for administrator review':'Save offline draft'}</button></div></form>`:`<div class="context-banner cb-warn" style="margin-bottom:0"><div class="cb-ic">${icon('info')}</div><div><h4>No eligible doses</h4><p>There are no unrecorded scheduled doses available for your assigned children.</p></div></div>`}
+      </div>
+      <div class="card"><div class="card-head"><h3>My vaccination submissions</h3><span class="badge gray">${drafts.length}</span></div><div class="table-wrap"><table class="tbl"><thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Status</th><th>Last update</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="muted">No submissions yet. Use the form above to report a vaccination.</td></tr>'}</tbody></table></div></div>
+      <div class="disclaimer-box mt16">Drafts are kept in this browser only. Keep the same browser data until an administrator has reviewed the submissions. A secure server is required for delivery between devices.</div>`;
+  },
+
   view_dashboard(){
     const u = this.state.user;
     if(u.role==='child'){
@@ -1391,8 +1493,9 @@ const App = {
       if(!child)return `<div class="card card-pad">No vaccination record is linked to this account.</div>`;
       const schedule=DB.schedules.filter(d=>d.childId===child.id).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
       return `<div class="between" style="margin-bottom:16px"><div><h2>My Vaccinations</h2><p class="muted small">This account shows one child's record. A trusted adult can help contact the health team if anything looks wrong.</p></div></div>
-        <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>Vaccine</th><th>Due date</th><th>Status</th></tr></thead>
-        <tbody>${schedule.map(d=>`<tr><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.dueDate)}</td><td>${statusBadge(d.status)}</td></tr>`).join('')||'<tr><td colspan="3">No schedule is listed.</td></tr>'}</tbody></table></div></div>
+        <div class="context-banner cb-warn"><div class="cb-ic">${icon('info')}</div><div><h4>About certificates</h4><p>Certificates are available for recorded vaccinations and are checked against this browser's demo record. They are not official or clinically verified documents.</p></div></div>
+        <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>Vaccine</th><th>Date</th><th>Status</th><th>Certificate</th></tr></thead>
+        <tbody>${schedule.map(d=>`<tr><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate||d.dueDate)}</td><td><div class="dose-status">${statusBadge(d.status)}${d.administeredDate?'<span class="badge ok" title="Matched to the local demo record; not clinical verification">Verified · demo</span>':''}</div></td><td><button class="btn ghost sm" type="button" onclick="App.downloadVaccinationCertificate('${d.id}')" ${d.administeredDate?'':'disabled title="Available after this vaccination is recorded"'}>${d.administeredDate?'Download certificate':'Not available'}</button></td></tr>`).join('')||'<tr><td colspan="4">No schedule is listed.</td></tr>'}</tbody></table></div></div>
         <div class="disclaimer-box" style="margin-top:14px">Demo schedule only. Dates are not clinically verified. Confirm timing with an authorised health professional.</div>`;
     }
     const kids=scopeChildren(user).map(enrichChild);
@@ -1431,12 +1534,10 @@ const App = {
         <div class="card-body"><div class="timeline">
           ${sch.map(s=>{
             const st = s.administeredDate ? 'completed' : (s.dueDate < todayISO() ? 'overdue' : 'due');
-            const draft = DB.vaccineDrafts.filter(d=>d.scheduleId===s.id&&['offline_draft','pending_review','rejected'].includes(d.status)).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)))[0];
-            const canEditDraft = draft?.status==='rejected'&&u.role==='worker';
             return `<div class="tl-item ${st==='completed'?'done':st}">
               <div class="between">
                 <div><div class="tl-t">${esc(s.vaccineCode)}</div><div class="tl-s">${s.administeredDate ? 'Given '+fmtDate(s.administeredDate) : 'Due '+fmtDate(s.dueDate)+' · '+relDue(s.dueDate)}</div></div>
-                <div>${statusBadge(st)}${draft?statusBadge(draft.status):''}${isWorker && !s.administeredDate && (!draft||canEditDraft) ? `<button class="btn sm" onclick="App.openAdministerModal('${s.id}','${id}','${esc(s.vaccineCode)}','${canEditDraft?draft.id:''}')">${canEditDraft?'Edit draft':'Record'}</button>` : ''}</div>
+                <div>${statusBadge(st)}${isWorker && !s.administeredDate ? `<button class="btn sm" onclick="App.goto('offline',{scheduleId:'${s.id}',childId:'${id}',vaccineCode:'${esc(s.vaccineCode)}'})">Record</button>` : ''}</div>
               </div>
             </div>`;
           }).join('')}
@@ -1479,15 +1580,43 @@ const App = {
       </div>`;
   },
 
+  openCampDetails(campId){
+    const camp = DB.camps.find(c=>c.id===campId);
+    if(!camp) return;
+    const organizer = DB.users.find(u=>u.id===camp.leadId && u.role==='worker');
+    const phone = organizer && organizer.phone ? organizer.phone : '';
+    const phoneLink = phone.replace(/[^\d+]/g,'');
+    openModal(`<div class="modal-head"><div><h3>${esc(camp.title)}</h3><div style="margin-top:6px"><span class="badge ${camp.status==='active'?'ok':'info'}">${esc(camp.status)}</span></div></div><button class="icon-btn" onclick="App.closeModal()" aria-label="Close camp details">${icon('x')}</button></div>
+      <div class="modal-body">
+        <div class="camp-details-grid">
+          <div class="camp-detail"><div class="k">Community</div><div class="v">${esc(camp.community||'Not listed')}</div></div>
+          <div class="camp-detail"><div class="k">District</div><div class="v">${esc(camp.district||'Not listed')}</div></div>
+          <div class="camp-detail"><div class="k">Dates</div><div class="v">${fmtDate(camp.startDate)} – ${fmtDate(camp.endDate)}</div></div>
+          <div class="camp-detail"><div class="k">Facility</div><div class="v">${esc(camp.facility||'Not listed')}</div></div>
+          <div class="camp-detail wide"><div class="k">Services</div><div class="v">${esc(camp.services||'Not listed')}</div></div>
+          <div class="camp-detail"><div class="k">Listed capacity</div><div class="v">${camp.capacity?esc(camp.capacity)+' people':'Not listed'}</div></div>
+          <div class="camp-detail"><div class="k">Organiser</div><div class="v">${esc(organizer?organizer.name:'Not listed')}</div></div>
+          <div class="camp-detail wide"><div class="k">Organiser contact</div><div class="v">${phone?esc(phone):'No phone number listed'}</div></div>
+        </div>
+        <div class="row" style="margin-top:16px;flex-wrap:wrap">
+          ${phoneLink?`<a class="btn" href="tel:${esc(phoneLink)}">Call organiser</a>`:''}
+          <button type="button" class="btn ghost" onclick="App.closeModal()">Close</button>
+        </div>
+        <div class="disclaimer-box">Camp information and contact details are fictional demo data. Please confirm details with the organiser before travelling.</div>
+      </div>`);
+  },
   view_camps(){
-    return `<div class="between" style="margin-bottom:16px"><h2>Outreach Camps</h2></div>
+    return `<div class="between" style="margin-bottom:16px"><div><h2>Outreach Camps</h2><p class="small muted">Select a camp to see its full details and organiser contact.</p></div></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
-        ${DB.camps.map(c=>`<div class="card card-pad">
-          <div class="between"><h4>${esc(c.title)}</h4><span class="badge ${c.status==='active'?'ok':'info'}">${esc(c.status)}</span></div>
-          <div class="small muted" style="margin:10px 0">${esc(c.community)} · ${esc(c.district)}</div>
-          <div class="small muted">${fmtDate(c.startDate)} → ${fmtDate(c.endDate)}</div>
-          <div class="small muted" style="margin-top:8px">${esc(c.services||'')}</div>
-        </div>`).join('')}
+        ${DB.camps.map(c=>`<button type="button" class="card camp-card" onclick="App.openCampDetails('${c.id}')" aria-label="View details for ${esc(c.title)}">
+          <div class="card-pad">
+            <div class="between"><h4>${esc(c.title)}</h4><span class="badge ${c.status==='active'?'ok':'info'}">${esc(c.status)}</span></div>
+            <div class="small muted" style="margin:10px 0">${esc(c.community)} · ${esc(c.district)}</div>
+            <div class="small muted">${fmtDate(c.startDate)} → ${fmtDate(c.endDate)}</div>
+            <div class="small muted" style="margin-top:8px">${esc(c.services||'')}</div>
+            <div class="camp-open-hint">View camp details & organiser contact →</div>
+          </div>
+        </button>`).join('')}
       </div>`;
   },
 
@@ -1637,51 +1766,6 @@ const App = {
     this.render();
   },
 
-  view_sync(){
-    const user=this.state.user;
-    if(user.role==='admin'){
-      const waiting=DB.vaccineDrafts.filter(d=>d.status==='pending_review').sort((a,b)=>String(b.syncedAt||b.createdAt).localeCompare(String(a.syncedAt||a.createdAt)));
-      const offline=DB.vaccineDrafts.filter(d=>d.status==='offline_draft').sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
-      const closed=DB.vaccineDrafts.filter(d=>['approved','rejected'].includes(d.status)).sort((a,b)=>String(b.reviewedAt||b.updatedAt).localeCompare(String(a.reviewedAt||a.updatedAt))).slice(0,8);
-      return `<div class="between" style="margin-bottom:16px"><div><h2>Vaccination review</h2><p class="muted small">Approve worker submissions before they update a child's schedule.</p></div></div>
-        ${!navigator.onLine?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>Offline — review paused</h4><p>Reconnect to review drafts. Workers' unsent offline drafts will appear here after their device reconnects.</p></div></div>`:''}
-        <div class="context-banner cb-follow"><div class="cb-ic">${icon('shield')}</div><div><h4>Administrator verification</h4><p>Approving a draft marks the vaccination as verified and updates the schedule. In this single-browser prototype, drafts and reviews stay in this browser; a production server is required for automatic multi-device sync.</p></div></div>
-        <div class="kpi-grid" style="margin-bottom:16px">
-          <div class="kpi amber"><div class="k-top"><div class="k-ic">${icon('clock')}</div></div><div class="k-val">${waiting.length}</div><div class="k-lbl">Awaiting review</div></div>
-          <div class="kpi blue"><div class="k-top"><div class="k-ic">${icon('wifiOff')}</div></div><div class="k-val">${offline.length}</div><div class="k-lbl">Waiting for connection</div></div>
-          <div class="kpi green"><div class="k-top"><div class="k-ic">${icon('clipboardCheck')}</div></div><div class="k-val">${DB.vaccineDrafts.filter(d=>d.status==='approved').length}</div><div class="k-lbl">Approved</div></div>
-        </div>
-        <div class="card"><div class="card-head"><h3>Ready for review</h3><span class="badge info">${waiting.length}</span></div><div class="table-wrap"><table class="tbl">
-          <thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Worker</th><th>Queued</th><th></th></tr></thead>
-          <tbody>${waiting.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<tr><td>${esc(child?.name||'—')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${esc(d.workerName||'—')}</td><td>${fmtDT(d.syncedAt||d.createdAt)}</td><td><button class="btn sm" ${navigator.onLine?'':'disabled'} onclick="App.openReviewVaccinationDraft('${d.id}')">Review</button></td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No vaccination drafts are waiting for review.</td></tr>'}</tbody>
-        </table></div></div>
-        ${offline.length?`<div class="card" style="margin-top:16px"><div class="card-head"><h3>Not yet received</h3><span class="badge warn">${offline.length}</span></div><div class="card-body"><p class="small muted">These drafts are saved on this browser but have not returned to the review queue yet.</p>${offline.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<div class="list-row"><div class="lr-main"><div class="lr-t">${esc(child?.name||'—')} · ${esc(d.vaccineCode)}</div><div class="lr-s">Saved ${fmtDT(d.createdAt)} by ${esc(d.workerName||'—')}</div></div>${statusBadge(d.status)}</div>`}).join('')}</div></div>`:''}
-        ${closed.length?`<div class="card" style="margin-top:16px"><div class="card-head"><h3>Recently reviewed</h3></div><div class="card-body">${closed.map(d=>{const child=DB.children.find(c=>c.id===d.childId),reviewer=DB.users.find(x=>x.id===d.reviewedBy);return `<div class="list-row"><div class="lr-main"><div class="lr-t">${esc(child?.name||'—')} · ${esc(d.vaccineCode)}</div><div class="lr-s">${d.status==='approved'?'Verified':'Changes requested'} by ${esc(reviewer?.name||'administrator')} · ${fmtDT(d.reviewedAt)}</div>${d.reviewNote?`<div class="lr-s">${esc(d.reviewNote)}</div>`:''}</div>${statusBadge(d.status)}</div>`}).join('')}</div></div>`:''}`;
-    }
-    if(user.role!=='worker') return '<div class="card card-pad">Access denied.</div>';
-    const drafts=DB.vaccineDrafts.filter(d=>d.workerId===user.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
-    const count=status=>drafts.filter(d=>d.status===status).length;
-    const draftRows=drafts.map(d=>{
-      const child=DB.children.find(c=>c.id===d.childId);
-      const reviewNote=d.reviewNote?`<div class="tiny muted" style="margin-top:5px">${esc(d.reviewNote)}</div>`:'';
-      const editAction=d.status==='rejected'?`<button class="btn ghost sm" onclick="App.openAdministerModal('${d.scheduleId}','${d.childId}','${esc(d.vaccineCode)}','${d.id}')">Edit & resubmit</button>`:'';
-      return `<tr><td>${esc(child?.name||'—')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${statusBadge(d.status)}${reviewNote}</td><td>${fmtDT(d.updatedAt||d.createdAt)}</td><td>${editAction}</td></tr>`;
-    }).join('');
-    return `<div class="between" style="margin-bottom:16px"><div><h2>Offline drafts</h2><p class="muted small">Saved vaccination reports stay unverified until an administrator approves them.</p></div></div>
-      ${!navigator.onLine?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>You are offline</h4><p>Vaccination reports are saved on this device. When internet returns, they move to the administrator review queue. Keep this browser's data and do not clear site storage while drafts are waiting.</p></div></div>`:`<div class="context-banner cb-follow"><div class="cb-ic">${icon('wifi')}</div><div><h4>Connection available</h4><p>New reports will enter the administrator review queue. They will not update a child's official schedule until approved.</p></div></div>`}
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi amber"><div class="k-top"><div class="k-ic">${icon('wifiOff')}</div></div><div class="k-val">${count('offline_draft')}</div><div class="k-lbl">Saved offline</div></div>
-        <div class="kpi blue"><div class="k-top"><div class="k-ic">${icon('clock')}</div></div><div class="k-val">${count('pending_review')}</div><div class="k-lbl">Waiting for admin</div></div>
-        <div class="kpi green"><div class="k-top"><div class="k-ic">${icon('clipboardCheck')}</div></div><div class="k-val">${count('approved')}</div><div class="k-lbl">Approved</div></div>
-        <div class="kpi red"><div class="k-top"><div class="k-ic">${icon('alert')}</div></div><div class="k-val">${count('rejected')}</div><div class="k-lbl">Needs changes</div></div>
-      </div>
-      <div class="card"><div class="card-head"><h3>My vaccination submissions</h3><span class="badge gray">${drafts.length}</span></div><div class="table-wrap"><table class="tbl">
-        <thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Status</th><th>Last update</th><th></th></tr></thead>
-        <tbody>${draftRows||'<tr><td colspan="6" class="muted">No vaccination drafts yet. Choose a child and select Record to start.</td></tr>'}</tbody>
-      </table></div></div>
-      <div class="disclaimer-box">Prototype storage is limited to this browser. This demonstrates offline draft and administrator-review steps; actual delivery between devices requires a secure backend and sync API. Use demo data only.</div>`;
-  },
-
   view_integrations(){
     const provider = 'NOT CONFIGURED (simulated only)';
     return `<div class="between" style="margin-bottom:16px"><h2>Integrations</h2></div>
@@ -1699,7 +1783,6 @@ const App = {
   view_capabilities(){
     const caps = [
       ['Browser persistence (localStorage)','LIVE','Data survives refresh and closes on this browser.'],
-      ['Offline vaccination drafts','DEMO','Saved locally and queued for administrator review when the connection returns; this prototype does not sync across devices.'],
       ['Demo sign-in','DEMO','Simple hash comparison. NOT secure — production needs server bcrypt.'],
       ['Role-based views','DEMO','Enforced in browser. Bypassable via DevTools. Production needs server RBAC.'],
       ['Case workflow','LIVE','Assign, transition, reason, contact, visit, resolve. All work.'],
@@ -1727,7 +1810,6 @@ const App = {
           <li>Real backend (Node.js + SQLite or Postgres) for persistent multi-user data</li>
           <li>Server-side authentication with bcrypt/argon2 and HttpOnly cookies</li>
           <li>Server-enforced RBAC on every endpoint</li>
-          <li>Authenticated, conflict-safe sync API for offline vaccination drafts and administrator verification</li>
           <li>U-WIN API credentials from MoHFW with signed agreement</li>
           <li>DLT-registered SMS sender (TRAI) and telephony provider</li>
           <li>Approved immunisation schedule from state health authority</li>
@@ -1741,7 +1823,7 @@ const App = {
     return `<div class="between" style="margin-bottom:16px"><h2>Settings & data</h2></div>
       <div class="card card-pad" style="max-width:600px">
         <h3 style="margin-bottom:12px">Local data</h3>
-        <p class="small muted" style="margin-bottom:12px">All data, including offline vaccination drafts, lives in this browser's localStorage. Clearing browser data will erase it.</p>
+        <p class="small muted" style="margin-bottom:12px">All data lives in this browser's localStorage. Clearing browser data will erase it.</p>
         <div class="kv" style="margin-bottom:16px">
           <div class="kv-i"><div class="k">Children</div><div class="v">${DB.children.length}</div></div>
           <div class="kv-i"><div class="k">Cases</div><div class="v">${DB.cases.length}</div></div>
@@ -1792,17 +1874,87 @@ const App = {
 
   view_profile(){
     const u = this.state.user;
-    return `<div class="between" style="margin-bottom:16px"><h2>My profile</h2></div>
-      <div class="card card-pad" style="max-width:600px">
-        <form onsubmit="App.saveProfile(event)">
-          <label class="field"><span>Name</span><input type="text" name="name" value="${esc(u.name)}" required /></label>
-          <label class="field"><span>Phone</span><input type="tel" name="phone" value="${esc(u.phone||'')}" /></label>
-          ${u.role!=='child'?`<label class="field"><span>Facility</span><input type="text" name="facility" value="${esc(u.facility||'')}" /></label>`:''}
-          <label class="field"><span>Email (read-only)</span><input type="email" value="${esc(u.email)}" disabled /></label>
-          <button class="btn" type="submit">Save</button>
-        </form>
-        <div class="divider"></div>
-        <button class="btn ghost" onclick="App.doLogout()">Sign out</button>
+    const editing = this.state.profileEditing;
+    const roleNames = {admin:'Administrator',worker:'Health Worker',child:'Child'};
+    const field = (label,value,name,editable,type='text') => editing && editable
+      ? `<label class="field profile-edit-field"><span>${esc(label)}</span><input type="${type}" name="${name}" value="${esc(value||'')}" ${label==='Name'?'required':''} /></label>`
+      : `<div class="profile-item"><div class="profile-label">${esc(label)}</div><div class="profile-value">${esc(value===0?0:(value||'—'))}</div></div>`;
+    const section = (title,fields) => `<section class="profile-section"><h3>${esc(title)}</h3><div class="profile-grid">${fields.join('')}</div></section>`;
+    const readonlyField = (label,value) => field(label,value,null,false);
+    const accountFields = [
+      field('Name',u.name,'name',true),
+      readonlyField('Email',u.email),
+      readonlyField('Account type',roleNames[u.role]||u.role),
+      readonlyField('Account status',u.active?'Active':'Disabled'),
+      readonlyField('Member since',u.createdAt?fmtDate(u.createdAt.slice(0,10)):'—')
+    ];
+    let detailSections = '';
+
+    if(u.role==='child'){
+      const child = childRecordFor(u);
+      if(child){
+        const household = DB.households.find(h=>h.id===child.householdId);
+        const worker = DB.users.find(w=>w.id===child.assignedWorkerId);
+        const info = enrichChild(child);
+        const childFields = [
+          readonlyField('VaxReach ID',child.uniqueId),
+          readonlyField('Date of birth',fmtDate(child.dob)),
+          readonlyField('Age',info.ageText),
+          readonlyField('Sex',child.sex),
+          readonlyField('Community',child.community),
+          readonlyField('District',child.district),
+          field('Trusted adult / guardian',child.guardianName||household?.head,'guardianName',true),
+          field('Trusted adult contact',child.phone||u.phone,'phone',true,'tel'),
+          readonlyField('Household address',household?.address),
+          readonlyField('Assigned health worker',worker?.name),
+          readonlyField('Health worker facility',worker?.facility)
+        ];
+        detailSections = section('Child and vaccination record',childFields);
+      }else{
+        detailSections = `<section class="profile-section"><h3>Child record</h3><p class="small muted">No child record is linked to this account yet.</p></section>`;
+      }
+    }else if(u.role==='worker'){
+      const assignedChildren = DB.children.filter(c=>c.assignedWorkerId===u.id);
+      const openCases = DB.cases.filter(c=>c.assignedTo===u.id&&!['resolved','unable_to_confirm'].includes(c.status));
+      const communities = [...new Set(assignedChildren.map(c=>c.community).filter(Boolean))].join(', ')||'—';
+      const districts = [...new Set(assignedChildren.map(c=>c.district).filter(Boolean))].join(', ')||'—';
+      const workFields = [
+        field('Phone',u.phone,'phone',true,'tel'),
+        field('Facility',u.facility,'facility',true),
+        readonlyField('Assigned children',assignedChildren.length),
+        readonlyField('Open assigned follow-ups',openCases.length),
+        readonlyField('Communities',communities),
+        readonlyField('Districts',districts),
+        readonlyField('Assigned child records',assignedChildren.map(c=>`${c.name} (${c.uniqueId})`).join(', ')||'None assigned')
+      ];
+      accountFields.push(field('Phone',u.phone,'phone',true,'tel'),field('Facility',u.facility,'facility',true));
+      detailSections = section('Work profile',workFields.slice(2));
+    }else{
+      const activeUsers = DB.users.filter(x=>x.active).length;
+      const adminFields = [
+        field('Phone',u.phone,'phone',true,'tel'),
+        field('Facility / organisation',u.facility,'facility',true),
+        readonlyField('Active accounts managed',activeUsers),
+        readonlyField('Child records',DB.children.length),
+        readonlyField('Follow-up records',DB.cases.length)
+      ];
+      accountFields.push(...adminFields.slice(0,2));
+      detailSections = section('Administration overview',adminFields.slice(2));
+    }
+
+    const formOpen = editing?'<form onsubmit="App.saveProfile(event)" autocomplete="off">':'';
+    const formClose = editing?'<div class="profile-actions"><button class="btn" type="submit">Save changes</button><button class="btn ghost" type="button" onclick="App.cancelProfileEdit()">Cancel</button></div></form>':'';
+    return `<div class="between" style="margin-bottom:16px"><div><h2>My profile</h2><p class="small muted">Your account and role details are shown below.</p></div></div>
+      <div class="card card-pad profile-panel">
+        <div class="profile-summary">
+          <div class="profile-person"><div class="profile-avatar">${esc(initials(u.name))}</div><div><h3>${esc(u.name)}</h3><div class="muted">${esc(roleNames[u.role]||u.role)} · ${esc(u.email)}</div></div></div>
+          ${editing?'':`<button type="button" class="btn ghost" onclick="App.toggleProfileEdit()">Edit profile</button>`}
+        </div>
+        ${formOpen}
+        ${section('Account details',accountFields)}
+        ${detailSections}
+        ${formClose}
+        ${editing?'':`<div class="profile-actions"><button class="btn ghost" onclick="App.doLogout()">Sign out</button></div>`}
       </div>`;
   }
 };
@@ -1812,13 +1964,13 @@ const NAV = {
   admin:[
     ['dashboard','Dashboard','grid'],['worklist','Worklist','target'],['cases','Cases','clipboardCheck'],
     ['children','Children','baby'],['households','Households','home'],['map','GeoReach','map'],
-    ['camps','Camps','layers'],['reports','Reports','chart'],['sync','Vaccination review','shield'],['audit','Audit','eye'],
+    ['camps','Camps','layers'],['reports','Reports','chart'],['offline','Vaccination review','shield'],['audit','Audit','eye'],
     ['users','Users','users'],['schedule','Schedule','syringe'],['integrations','Integrations','info'],
     ['capabilities','Capabilities','info'],['settings','Settings','settings'],['profile','Profile','person']
   ],
   worker:[
     ['dashboard','Dashboard','grid'],['worklist','Worklist','target'],['cases','Cases','clipboardCheck'],
-    ['children','Children','baby'],['sync','Offline drafts','wifiOff'],['households','Households','home'],['map','GeoReach','map'],
+    ['children','Children','baby'],['offline','Offline drafts','wifiOff'],['households','Households','home'],['map','GeoReach','map'],
     ['camps','Camps','layers'],['support','Support inbox','messageCircle'],['messages','Messages','send'],
     ['voice','Voice','mic'],['capabilities','Capabilities','info'],['profile','Profile','person']
   ],
