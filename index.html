@@ -367,7 +367,7 @@ function priorityBadge(p){
   return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
 }
 function statusBadge(s){
-  const m={new:['info','New'],needs_verification:['violet','Needs Verification'],assigned:['brand','Assigned'],awaiting_response:['warn','Awaiting Response'],resolved:['ok','Resolved'],unable_to_confirm:['gray','Unable to Confirm'],completed:['ok','Completed'],overdue:['danger','Overdue'],due:['warn','Due soon'],upcoming:['gray','Upcoming']};
+  const m={new:['info','New'],needs_verification:['violet','Needs Verification'],assigned:['brand','Assigned'],awaiting_response:['warn','Awaiting Response'],resolved:['ok','Resolved'],unable_to_confirm:['gray','Unable to Confirm'],completed:['ok','Completed'],overdue:['danger','Overdue'],due:['warn','Due soon'],upcoming:['gray','Upcoming'],offline_draft:['warn','Offline draft'],pending_review:['info','Waiting for review'],approved:['ok','Approved'],rejected:['danger','Needs changes']};
   const [c,l]=m[s]||['gray',s];
   return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
 }
@@ -377,7 +377,7 @@ const KEY = 'vaxreach.data.v1';
 const SESSION = 'vaxreach.session.v1';
 const Store = {
   load(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; } },
-  save(db){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast('Storage full', 'err'); } },
+  save(db){ try { localStorage.setItem(KEY, JSON.stringify(db)); return true; } catch(e){ toast('Storage full — draft could not be saved', 'err'); return false; } },
   clear(){ localStorage.removeItem(KEY); localStorage.removeItem(SESSION); }
 };
 
@@ -444,7 +444,7 @@ function nearestCampFor(child){
 function seed(){
   const now = new Date().toISOString();
   const today = todayISO();
-  const db = { users:[], households:[], children:[], schedules:[], cases:[], history:[], notes:[], visits:[], camps:[], reasons:[], requests:[], messages:[], audit:[], consents:[], config:{approved:false,source:'Demo seeded placeholder — NOT clinically verified'} };
+  const db = { users:[], households:[], children:[], schedules:[], vaccineDrafts:[], cases:[], history:[], notes:[], visits:[], camps:[], reasons:[], requests:[], messages:[], audit:[], consents:[], config:{approved:false,source:'Demo seeded placeholder — NOT clinically verified'} };
 
   const users = [
     ['u_admin','Dr. Anjali Patnaik','admin@vaxreach.demo','admin123','admin','+91 674 555 0101','Odisha HFW (DEMO)'],
@@ -553,9 +553,35 @@ function seed(){
 /* ============ DB ============ */
 let DB = Store.load();
 if(!DB) { DB = seed(); Store.save(DB); }
-else { migrateChildAccounts(DB); migrateCaseScores(DB); Store.save(DB); }
+else {
+  migrateChildAccounts(DB);
+  migrateCaseScores(DB);
+  DB.vaccineDrafts = Array.isArray(DB.vaccineDrafts) ? DB.vaccineDrafts : [];
+  DB.vaccineDrafts.forEach(d=>{
+    if(!d.status) d.status = d.syncedAt ? 'pending_review' : 'offline_draft';
+    if(!Array.isArray(d.reviewHistory)) d.reviewHistory = [];
+  });
+  Store.save(DB);
+}
 
-function save(){ Store.save(DB); }
+function save(){ return Store.save(DB); }
+
+function queueOfflineVaccinationDrafts(){
+  if(!navigator.onLine) return 0;
+  const waiting = (DB.vaccineDrafts||[]).filter(d=>d.status==='offline_draft');
+  if(!waiting.length) return 0;
+  const now = new Date().toISOString();
+  waiting.forEach(d=>{
+    d.status = 'pending_review';
+    d.syncedAt = now;
+    d.updatedAt = now;
+    d.reviewHistory = Array.isArray(d.reviewHistory) ? d.reviewHistory : [];
+    d.reviewHistory.push({action:'queued_for_admin_review',at:now});
+  });
+  DB.audit.unshift({id:genId('a'),at:now,actorName:'System',action:`${waiting.length} offline vaccination draft${waiting.length===1?'':'s'} queued for admin review`});
+  save();
+  return waiting.length;
+}
 
 function getSession(){
   try { return JSON.parse(localStorage.getItem(SESSION)); } catch(e){ return null; }
@@ -623,8 +649,17 @@ const App = {
     const u = currentUser();
     this.state.user = u;
     this.state.screen = u ? 'app' : 'landing';
-    window.addEventListener('online', () => { this.state.online = true; this.render(); });
-    window.addEventListener('offline', () => { this.state.online = false; this.render(); });
+    this.state.online = navigator.onLine;
+    queueOfflineVaccinationDrafts();
+    window.addEventListener('online', () => this.handleConnectivityChange(true));
+    window.addEventListener('offline', () => this.handleConnectivityChange(false));
+    this.render();
+  },
+
+  handleConnectivityChange(isOnline){
+    this.state.online = isOnline;
+    const queued = isOnline ? queueOfflineVaccinationDrafts() : 0;
+    if(queued) toast(`${queued} offline draft${queued===1?'':'s'} ready for administrator review`);
     this.render();
   },
 
@@ -830,28 +865,155 @@ const App = {
     this.render();
   },
 
-  openAdministerModal(scheduleId, childId, vaccineCode){
+  openAdministerModal(scheduleId, childId, vaccineCode, draftId=''){
+    const draft = draftId ? DB.vaccineDrafts.find(d=>d.id===draftId) : null;
+    const s = DB.schedules.find(x=>x.id===scheduleId);
+    if(!s || s.administeredDate){ toast('This vaccination record is already complete', 'err'); return; }
+    const duplicate = DB.vaccineDrafts.find(d=>d.scheduleId===scheduleId && d.id!==draftId && ['offline_draft','pending_review'].includes(d.status));
+    if(duplicate){ toast('A draft for this dose is already waiting for review', 'err'); return; }
     openModal(`<div class="modal-head"><h3>Record vaccination</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
       <div class="modal-body">
         <p class="small muted" style="margin-bottom:14px">${esc(vaccineCode)} — demo schedule, verify with an authorised health professional.</p>
-        <form onsubmit="App.saveVaccination(event,'${scheduleId}')">
-          <label class="field"><span>Date administered</span><input type="date" name="date" value="${todayISO()}" max="${todayISO()}" required /></label>
-          <label class="field"><span>Notes</span><textarea name="notes" rows="2"></textarea></label>
-          <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">Save</button></div>
+        <div class="context-banner ${navigator.onLine?'cb-follow':'cb-warn'}"><div class="cb-ic">${icon(navigator.onLine?'info':'wifiOff')}</div><div><h4>${navigator.onLine?'Administrator review required':'Offline draft'}</h4><p>${navigator.onLine?'Saving queues this record for an administrator. It will not change the official schedule until approved.':'This draft is saved on this device and will move to the administrator review queue when the connection returns.'}</p></div></div>
+        <form onsubmit="App.saveVaccination(event,'${scheduleId}','${draftId}')">
+          <label class="field"><span>Date administered</span><input type="date" name="date" value="${esc(draft?.administeredDate||todayISO())}" max="${todayISO()}" required /></label>
+          <label class="field"><span>Vaccine batch number (optional)</span><input type="text" name="batchNumber" value="${esc(draft?.batchNumber||'')}" maxlength="80" /></label>
+          <label class="field"><span>Notes (optional)</span><textarea name="notes" rows="2" maxlength="500">${esc(draft?.notes||'')}</textarea></label>
+          <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">${draft?'Resubmit for review':'Save draft'}</button></div>
         </form>
       </div>`);
   },
-  saveVaccination(event, scheduleId){
+  saveVaccination(event, scheduleId, draftId=''){
     event.preventDefault();
     const s = DB.schedules.find(x=>x.id===scheduleId);
     if(!s) return;
-    s.administeredDate = event.target.date.value;
-    s.status = 'completed';
-    s.administeredBy = this.state.user.id;
-    s.notes = event.target.notes.value;
-    save();
+    const user = this.state.user;
+    const child = DB.children.find(c=>c.id===s.childId);
+    if(!user || !['worker','admin'].includes(user.role) || !canAccessChild(user,child)) return;
+    if(s.administeredDate){ toast('This vaccination record is already complete', 'err'); return; }
+    const existing = draftId ? DB.vaccineDrafts.find(d=>d.id===draftId) : null;
+    if(draftId && (!existing || (existing.workerId!==user.id && user.role!=='admin'))){ toast('Draft not found', 'err'); return; }
+    const duplicate = DB.vaccineDrafts.find(d=>d.scheduleId===scheduleId && d.id!==draftId && ['offline_draft','pending_review'].includes(d.status));
+    if(duplicate){ toast('A draft for this dose is already waiting for review', 'err'); return; }
+    const now = new Date().toISOString();
+    const online = navigator.onLine;
+    if(user.role==='admin' && online && !existing){
+      s.administeredDate = event.target.date.value;
+      s.status = 'completed';
+      s.administeredBy = user.id;
+      s.verified = true;
+      s.verifiedBy = user.id;
+      s.verifiedAt = now;
+      s.batchNumber = event.target.batchNumber.value.trim();
+      s.notes = event.target.notes.value.trim();
+      DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:`Vaccination recorded and verified: ${s.vaccineCode}`});
+      if(!save()) return;
+      closeModal();
+      toast('Vaccination recorded and verified');
+      this.render();
+      return;
+    }
+    const nextStatus = online ? 'pending_review' : 'offline_draft';
+    const details = {
+      scheduleId:s.id,childId:s.childId,vaccineCode:s.vaccineCode,
+      administeredDate:event.target.date.value,
+      batchNumber:event.target.batchNumber.value.trim(),notes:event.target.notes.value.trim(),
+      workerId:user.id,workerName:user.name,status:nextStatus,updatedAt:now,
+      syncedAt:online?now:null,reviewedAt:null,reviewedBy:null,reviewNote:''
+    };
+    if(existing){
+      Object.assign(existing,details);
+      existing.reviewHistory = Array.isArray(existing.reviewHistory) ? existing.reviewHistory : [];
+      existing.reviewHistory.push({action:'resubmitted',by:user.id,at:now});
+    } else {
+      DB.vaccineDrafts.unshift({id:genId('vd'),...details,createdAt:now,reviewHistory:[]});
+    }
+    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:online?'Vaccination draft queued for administrator review':'Vaccination draft saved offline'});
+    if(!save()) return;
     closeModal();
-    toast('Vaccination recorded');
+    toast(online?'Draft sent for administrator review':'Draft saved on this device');
+    this.render();
+  },
+
+  openReviewVaccinationDraft(draftId){
+    if(this.state.user?.role!=='admin'){ toast('Administrator access required', 'err'); return; }
+    if(!navigator.onLine){ toast('Reconnect before reviewing vaccination drafts', 'err'); return; }
+    const draft = DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
+    if(!draft) return;
+    const child = DB.children.find(c=>c.id===draft.childId);
+    openModal(`<div class="modal-head"><h3>Review vaccination draft</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
+      <div class="modal-body">
+        <div class="kv" style="margin-bottom:14px">
+          <div class="kv-i"><div class="k">Child</div><div class="v">${esc(child?.name||'—')}</div></div>
+          <div class="kv-i"><div class="k">Vaccine</div><div class="v">${esc(draft.vaccineCode)}</div></div>
+          <div class="kv-i"><div class="k">Date administered</div><div class="v">${fmtDate(draft.administeredDate)}</div></div>
+          <div class="kv-i"><div class="k">Worker</div><div class="v">${esc(draft.workerName||'—')}</div></div>
+          <div class="kv-i"><div class="k">Batch number</div><div class="v">${esc(draft.batchNumber||'—')}</div></div>
+          <div class="kv-i"><div class="k">Notes</div><div class="v">${esc(draft.notes||'—')}</div></div>
+        </div>
+        <div class="disclaimer-box">Approval updates the child's schedule and marks this record as verified by you. Check the details before approving.</div>
+        <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Close</button><button type="button" class="btn danger" onclick="App.openRejectVaccinationDraft('${draft.id}')">Request changes</button><button type="button" class="btn" onclick="App.approveVaccinationDraft('${draft.id}')">Approve & verify</button></div>
+      </div>`);
+  },
+
+  approveVaccinationDraft(draftId){
+    const user = this.state.user;
+    const draft = DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
+    if(user?.role!=='admin'){ toast('Administrator access required', 'err'); return; }
+    if(!navigator.onLine){ toast('Reconnect before reviewing vaccination drafts', 'err'); return; }
+    if(!draft){ toast('This draft is no longer awaiting review', 'err'); return; }
+    const schedule = DB.schedules.find(s=>s.id===draft.scheduleId);
+    if(!schedule || schedule.administeredDate){ toast('The schedule has changed. Review this draft and request changes if needed.', 'err'); return; }
+    const now = new Date().toISOString();
+    draft.status='approved';
+    draft.reviewedAt=now;
+    draft.reviewedBy=user.id;
+    draft.reviewNote='';
+    draft.reviewHistory.push({action:'approved',by:user.id,at:now});
+    schedule.administeredDate=draft.administeredDate;
+    schedule.status='completed';
+    schedule.administeredBy=draft.workerId;
+    schedule.batchNumber=draft.batchNumber||'';
+    schedule.notes=draft.notes||'';
+    schedule.verified=true;
+    schedule.verifiedBy=user.id;
+    schedule.verifiedAt=now;
+    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:`Vaccination draft approved and verified: ${draft.vaccineCode}`});
+    if(!save()) return;
+    closeModal();
+    toast('Draft approved; schedule updated');
+    this.render();
+  },
+
+  openRejectVaccinationDraft(draftId){
+    if(this.state.user?.role!=='admin' || !navigator.onLine){ toast('Reconnect as an administrator to review this draft', 'err'); return; }
+    const draft=DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
+    if(!draft) return;
+    openModal(`<div class="modal-head"><h3>Request changes</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
+      <div class="modal-body"><p class="small muted" style="margin-bottom:12px">${esc(draft.vaccineCode)} for ${esc(DB.children.find(c=>c.id===draft.childId)?.name||'the child')} will remain unverified.</p>
+        <form onsubmit="App.rejectVaccinationDraft(event,'${draft.id}')">
+          <label class="field"><span>What should the worker correct?</span><textarea name="reviewNote" rows="3" maxlength="500" required></textarea></label>
+          <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.openReviewVaccinationDraft('${draft.id}')">Back</button><button class="btn danger" type="submit">Request changes</button></div>
+        </form>
+      </div>`);
+  },
+
+  rejectVaccinationDraft(event,draftId){
+    event.preventDefault();
+    const user=this.state.user;
+    const draft=DB.vaccineDrafts.find(d=>d.id===draftId && d.status==='pending_review');
+    const note=event.target.reviewNote.value.trim();
+    if(user?.role!=='admin' || !navigator.onLine || !draft || !note){ if(!navigator.onLine) toast('Reconnect before reviewing vaccination drafts', 'err'); return; }
+    const now=new Date().toISOString();
+    draft.status='rejected';
+    draft.reviewedAt=now;
+    draft.reviewedBy=user.id;
+    draft.reviewNote=note;
+    draft.reviewHistory.push({action:'changes_requested',by:user.id,at:now,note});
+    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:`Changes requested for vaccination draft: ${draft.vaccineCode}`});
+    if(!save()) return;
+    closeModal();
+    toast('Changes requested from worker');
     this.render();
   },
 
@@ -1009,6 +1171,11 @@ const App = {
   shell(u, title, navHtml, content){
     const roleLabel = {admin:'Administrator', worker:'Health Worker', child:'Child'}[u.role];
     const roleIcon = {admin:'shield', worker:'activity', child:'baby'}[u.role];
+    const draftCount = u.role==='admin'
+      ? DB.vaccineDrafts.filter(d=>['pending_review','offline_draft'].includes(d.status)).length
+      : u.role==='worker'
+        ? DB.vaccineDrafts.filter(d=>d.workerId===u.id && ['offline_draft','pending_review','rejected'].includes(d.status)).length
+        : 0;
     return `<div class="shell" data-role="${u.role}">
       <div class="scrim" id="scrim" onclick="App.toggleSidebar(false)"></div>
       <aside class="sidebar" id="sidebar">
@@ -1028,6 +1195,7 @@ const App = {
           <div class="tb-title">${esc(title)}</div>
           <div class="tb-right">
             <span class="badge ${this.state.online ? 'ok' : 'warn'}">${this.state.online ? 'Online' : 'Offline'}</span>
+            ${draftCount?`<button class="btn ghost sm" onclick="App.goto('sync')">${draftCount} draft${draftCount===1?'':'s'}</button>`:''}
             <span class="role-pill">${icon(roleIcon)} ${roleLabel}</span>
             <button class="tb-avatar" onclick="App.goto('profile')"><div class="avatar">${esc(initials(u.name))}</div><span>${esc(u.name.split(' ')[0])}</span></button>
           </div>
@@ -1262,10 +1430,12 @@ const App = {
         <div class="card-body"><div class="timeline">
           ${sch.map(s=>{
             const st = s.administeredDate ? 'completed' : (s.dueDate < todayISO() ? 'overdue' : 'due');
+            const draft = DB.vaccineDrafts.filter(d=>d.scheduleId===s.id&&['offline_draft','pending_review','rejected'].includes(d.status)).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)))[0];
+            const canEditDraft = draft?.status==='rejected'&&u.role==='worker';
             return `<div class="tl-item ${st==='completed'?'done':st}">
               <div class="between">
                 <div><div class="tl-t">${esc(s.vaccineCode)}</div><div class="tl-s">${s.administeredDate ? 'Given '+fmtDate(s.administeredDate) : 'Due '+fmtDate(s.dueDate)+' · '+relDue(s.dueDate)}</div></div>
-                <div>${statusBadge(st)}${isWorker && !s.administeredDate ? `<button class="btn sm" onclick="App.openAdministerModal('${s.id}','${id}','${esc(s.vaccineCode)}')">Record</button>` : ''}</div>
+                <div>${statusBadge(st)}${draft?statusBadge(draft.status):''}${isWorker && !s.administeredDate && (!draft||canEditDraft) ? `<button class="btn sm" onclick="App.openAdministerModal('${s.id}','${id}','${esc(s.vaccineCode)}','${canEditDraft?draft.id:''}')">${canEditDraft?'Edit draft':'Record'}</button>` : ''}</div>
               </div>
             </div>`;
           }).join('')}
@@ -1466,6 +1636,45 @@ const App = {
     this.render();
   },
 
+  view_sync(){
+    const user=this.state.user;
+    if(user.role==='admin'){
+      const waiting=DB.vaccineDrafts.filter(d=>d.status==='pending_review').sort((a,b)=>String(b.syncedAt||b.createdAt).localeCompare(String(a.syncedAt||a.createdAt)));
+      const offline=DB.vaccineDrafts.filter(d=>d.status==='offline_draft').sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+      const closed=DB.vaccineDrafts.filter(d=>['approved','rejected'].includes(d.status)).sort((a,b)=>String(b.reviewedAt||b.updatedAt).localeCompare(String(a.reviewedAt||a.updatedAt))).slice(0,8);
+      return `<div class="between" style="margin-bottom:16px"><div><h2>Vaccination review</h2><p class="muted small">Approve worker submissions before they update a child's schedule.</p></div></div>
+        ${!navigator.onLine?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>Offline — review paused</h4><p>Reconnect to review drafts. Workers' unsent offline drafts will appear here after their device reconnects.</p></div></div>`:''}
+        <div class="context-banner cb-follow"><div class="cb-ic">${icon('shield')}</div><div><h4>Administrator verification</h4><p>Approving a draft marks the vaccination as verified and updates the schedule. In this single-browser prototype, drafts and reviews stay in this browser; a production server is required for automatic multi-device sync.</p></div></div>
+        <div class="kpi-grid" style="margin-bottom:16px">
+          <div class="kpi amber"><div class="k-top"><div class="k-ic">${icon('clock')}</div></div><div class="k-val">${waiting.length}</div><div class="k-lbl">Awaiting review</div></div>
+          <div class="kpi blue"><div class="k-top"><div class="k-ic">${icon('wifiOff')}</div></div><div class="k-val">${offline.length}</div><div class="k-lbl">Waiting for connection</div></div>
+          <div class="kpi green"><div class="k-top"><div class="k-ic">${icon('clipboardCheck')}</div></div><div class="k-val">${DB.vaccineDrafts.filter(d=>d.status==='approved').length}</div><div class="k-lbl">Approved</div></div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Ready for review</h3><span class="badge info">${waiting.length}</span></div><div class="table-wrap"><table class="tbl">
+          <thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Worker</th><th>Queued</th><th></th></tr></thead>
+          <tbody>${waiting.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<tr><td>${esc(child?.name||'—')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${esc(d.workerName||'—')}</td><td>${fmtDT(d.syncedAt||d.createdAt)}</td><td><button class="btn sm" ${navigator.onLine?'':'disabled'} onclick="App.openReviewVaccinationDraft('${d.id}')">Review</button></td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No vaccination drafts are waiting for review.</td></tr>'}</tbody>
+        </table></div></div>
+        ${offline.length?`<div class="card" style="margin-top:16px"><div class="card-head"><h3>Not yet received</h3><span class="badge warn">${offline.length}</span></div><div class="card-body"><p class="small muted">These drafts are saved on this browser but have not returned to the review queue yet.</p>${offline.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<div class="list-row"><div class="lr-main"><div class="lr-t">${esc(child?.name||'—')} · ${esc(d.vaccineCode)}</div><div class="lr-s">Saved ${fmtDT(d.createdAt)} by ${esc(d.workerName||'—')}</div></div>${statusBadge(d.status)}</div>`}).join('')}</div></div>`:''}
+        ${closed.length?`<div class="card" style="margin-top:16px"><div class="card-head"><h3>Recently reviewed</h3></div><div class="card-body">${closed.map(d=>{const child=DB.children.find(c=>c.id===d.childId),reviewer=DB.users.find(x=>x.id===d.reviewedBy);return `<div class="list-row"><div class="lr-main"><div class="lr-t">${esc(child?.name||'—')} · ${esc(d.vaccineCode)}</div><div class="lr-s">${d.status==='approved'?'Verified':'Changes requested'} by ${esc(reviewer?.name||'administrator')} · ${fmtDT(d.reviewedAt)}</div>${d.reviewNote?`<div class="lr-s">${esc(d.reviewNote)}</div>`:''}</div>${statusBadge(d.status)}</div>`}).join('')}</div></div>`:''}`;
+    }
+    if(user.role!=='worker') return '<div class="card card-pad">Access denied.</div>';
+    const drafts=DB.vaccineDrafts.filter(d=>d.workerId===user.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
+    const count=status=>drafts.filter(d=>d.status===status).length;
+    return `<div class="between" style="margin-bottom:16px"><div><h2>Offline drafts</h2><p class="muted small">Saved vaccination reports stay unverified until an administrator approves them.</p></div></div>
+      ${!navigator.onLine?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>You are offline</h4><p>Vaccination reports are saved on this device. When internet returns, they move to the administrator review queue. Keep this browser's data and do not clear site storage while drafts are waiting.</p></div></div>`:`<div class="context-banner cb-follow"><div class="cb-ic">${icon('wifi')}</div><div><h4>Connection available</h4><p>New reports will enter the administrator review queue. They will not update a child's official schedule until approved.</p></div></div>`}
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi amber"><div class="k-top"><div class="k-ic">${icon('wifiOff')}</div></div><div class="k-val">${count('offline_draft')}</div><div class="k-lbl">Saved offline</div></div>
+        <div class="kpi blue"><div class="k-top"><div class="k-ic">${icon('clock')}</div></div><div class="k-val">${count('pending_review')}</div><div class="k-lbl">Waiting for admin</div></div>
+        <div class="kpi green"><div class="k-top"><div class="k-ic">${icon('clipboardCheck')}</div></div><div class="k-val">${count('approved')}</div><div class="k-lbl">Approved</div></div>
+        <div class="kpi red"><div class="k-top"><div class="k-ic">${icon('alert')}</div></div><div class="k-val">${count('rejected')}</div><div class="k-lbl">Needs changes</div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>My vaccination submissions</h3><span class="badge gray">${drafts.length}</span></div><div class="table-wrap"><table class="tbl">
+        <thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Status</th><th>Last update</th><th></th></tr></thead>
+        <tbody>${drafts.map(d=>{const child=DB.children.find(c=>c.id===d.childId);return `<tr><td>${esc(child?.name||'—')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${statusBadge(d.status)}${d.reviewNote?`<div class="tiny muted" style="margin-top:5px">${esc(d.reviewNote)}</div>`:''}</td><td>${fmtDT(d.updatedAt||d.createdAt)}</td><td>${d.status==='rejected'?`<button class="btn ghost sm" onclick="App.openAdministerModal('${d.scheduleId}','${d.childId}','${esc(d.vaccineCode)}','${d.id}')">Edit & resubmit</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No vaccination drafts yet. Open a child's schedule and select Record to start one.</td></tr>'}</tbody>
+      </table></div></div>
+      <div class="disclaimer-box">Prototype storage is limited to this browser. This demonstrates offline draft and administrator-review steps; actual delivery between devices requires a secure backend and sync API. Use demo data only.</div>`;
+  },
+
   view_integrations(){
     const provider = 'NOT CONFIGURED (simulated only)';
     return `<div class="between" style="margin-bottom:16px"><h2>Integrations</h2></div>
@@ -1483,6 +1692,7 @@ const App = {
   view_capabilities(){
     const caps = [
       ['Browser persistence (localStorage)','LIVE','Data survives refresh and closes on this browser.'],
+      ['Offline vaccination drafts','DEMO','Saved locally and queued for administrator review when the connection returns; this prototype does not sync across devices.'],
       ['Demo sign-in','DEMO','Simple hash comparison. NOT secure — production needs server bcrypt.'],
       ['Role-based views','DEMO','Enforced in browser. Bypassable via DevTools. Production needs server RBAC.'],
       ['Case workflow','LIVE','Assign, transition, reason, contact, visit, resolve. All work.'],
@@ -1510,6 +1720,7 @@ const App = {
           <li>Real backend (Node.js + SQLite or Postgres) for persistent multi-user data</li>
           <li>Server-side authentication with bcrypt/argon2 and HttpOnly cookies</li>
           <li>Server-enforced RBAC on every endpoint</li>
+          <li>Authenticated, conflict-safe sync API for offline vaccination drafts and administrator verification</li>
           <li>U-WIN API credentials from MoHFW with signed agreement</li>
           <li>DLT-registered SMS sender (TRAI) and telephony provider</li>
           <li>Approved immunisation schedule from state health authority</li>
@@ -1523,7 +1734,7 @@ const App = {
     return `<div class="between" style="margin-bottom:16px"><h2>Settings & data</h2></div>
       <div class="card card-pad" style="max-width:600px">
         <h3 style="margin-bottom:12px">Local data</h3>
-        <p class="small muted" style="margin-bottom:12px">All data lives in this browser's localStorage. Clearing browser data will erase it.</p>
+        <p class="small muted" style="margin-bottom:12px">All data, including offline vaccination drafts, lives in this browser's localStorage. Clearing browser data will erase it.</p>
         <div class="kv" style="margin-bottom:16px">
           <div class="kv-i"><div class="k">Children</div><div class="v">${DB.children.length}</div></div>
           <div class="kv-i"><div class="k">Cases</div><div class="v">${DB.cases.length}</div></div>
@@ -1594,13 +1805,13 @@ const NAV = {
   admin:[
     ['dashboard','Dashboard','grid'],['worklist','Worklist','target'],['cases','Cases','clipboardCheck'],
     ['children','Children','baby'],['households','Households','home'],['map','GeoReach','map'],
-    ['camps','Camps','layers'],['reports','Reports','chart'],['audit','Audit','eye'],
+    ['camps','Camps','layers'],['reports','Reports','chart'],['sync','Vaccination review','shield'],['audit','Audit','eye'],
     ['users','Users','users'],['schedule','Schedule','syringe'],['integrations','Integrations','info'],
     ['capabilities','Capabilities','info'],['settings','Settings','settings'],['profile','Profile','person']
   ],
   worker:[
     ['dashboard','Dashboard','grid'],['worklist','Worklist','target'],['cases','Cases','clipboardCheck'],
-    ['children','Children','baby'],['households','Households','home'],['map','GeoReach','map'],
+    ['children','Children','baby'],['sync','Offline drafts','wifiOff'],['households','Households','home'],['map','GeoReach','map'],
     ['camps','Camps','layers'],['support','Support inbox','messageCircle'],['messages','Messages','send'],
     ['voice','Voice','mic'],['capabilities','Capabilities','info'],['profile','Profile','person']
   ],
