@@ -869,6 +869,7 @@ const App = {
     const draft = draftId ? DB.vaccineDrafts.find(d=>d.id===draftId) : null;
     const s = DB.schedules.find(x=>x.id===scheduleId);
     if(!s || s.administeredDate){ toast('This vaccination record is already complete', 'err'); return; }
+    if(draftId && (!draft || draft.status!=='rejected' || (draft.workerId!==this.state.user?.id && this.state.user?.role!=='admin'))){ toast('Only a rejected draft can be edited', 'err'); return; }
     const duplicate = DB.vaccineDrafts.find(d=>d.scheduleId===scheduleId && d.id!==draftId && ['offline_draft','pending_review'].includes(d.status));
     if(duplicate){ toast('A draft for this dose is already waiting for review', 'err'); return; }
     openModal(`<div class="modal-head"><h3>Record vaccination</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
@@ -892,7 +893,7 @@ const App = {
     if(!user || !['worker','admin'].includes(user.role) || !canAccessChild(user,child)) return;
     if(s.administeredDate){ toast('This vaccination record is already complete', 'err'); return; }
     const existing = draftId ? DB.vaccineDrafts.find(d=>d.id===draftId) : null;
-    if(draftId && (!existing || (existing.workerId!==user.id && user.role!=='admin'))){ toast('Draft not found', 'err'); return; }
+    if(draftId && (!existing || existing.status!=='rejected' || (existing.workerId!==user.id && user.role!=='admin'))){ toast('Only your rejected draft can be resubmitted', 'err'); return; }
     const duplicate = DB.vaccineDrafts.find(d=>d.scheduleId===scheduleId && d.id!==draftId && ['offline_draft','pending_review'].includes(d.status));
     if(duplicate){ toast('A draft for this dose is already waiting for review', 'err'); return; }
     const now = new Date().toISOString();
@@ -1214,7 +1215,7 @@ const App = {
       <section class="land-hero">
         <span class="land-eyebrow">Odisha immunisation follow-up · Demo</span>
         <h1>Every child. <span class="accent">Every vaccine.</span> On time.</h1>
-        <p class="land-lead">A single-file working demo. All data saved in your browser. Sign in to explore role-based dashboards, case workflow, and reports.</p>
+        <p class="land-lead">A single-file working demo. Save vaccination entries as offline drafts, then send them to administrator review when you reconnect. Demo data stays in this browser.</p>
         <div class="land-hero-actions"><button class="btn" onclick="App.showAuth()">Sign in to demo</button></div>
       </section>
       <section class="land-section">
