@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0d9488" />
+<title>VaxReach — Immunisation Follow-up</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d9488'/%3E%3Cpath d='M16 8v16M10 13h12' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<style>
+:root{
+  --brand-50:#f0fdfa;--brand-100:#ccfbf1;--brand-500:#14b8a6;--brand-600:#0d9488;--brand-700:#0f766e;
+  --ink-900:#0f172a;--ink-700:#334155;--ink-600:#475569;--ink-500:#64748b;--ink-400:#94a3b8;--ink-300:#cbd5e1;
+  --line-100:#f1f5f9;--line-200:#e2e8f0;
+  --surface:#fff;--surface-soft:#f8fafc;--surface-muted:#f1f5f9;
+  --ok-50:#ecfdf5;--ok-600:#059669;--ok-700:#047857;
+  --warn-50:#fffbeb;--warn-600:#d97706;--warn-700:#b45309;
+  --danger-50:#fef2f2;--danger-600:#dc2626;--danger-700:#b91c1c;
+  --info-50:#eff6ff;--info-700:#1d4ed8;
+  --purple-50:#f5f3ff;--purple-700:#6d28d9;
+  --r-sm:6px;--r-md:8px;--r-lg:12px;--r-full:999px;
+  --shadow-xs:0 1px 2px rgba(15,23,42,.04);
+  --shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+  --sidebar-w:240px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%}
+body{font-family:"Inter","Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.55;color:var(--ink-900);background:var(--surface);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;line-height:1.22;letter-spacing:-.015em}
+p{margin:0}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit}
+a{color:var(--brand-700);text-decoration:none}
+:focus-visible{outline:2px solid var(--brand-600);outline-offset:2px;border-radius:4px}
+
+.muted{color:var(--ink-500)}.small{font-size:.82rem}.tiny{font-size:.74rem}.bold{font-weight:600}
+.row{display:flex;align-items:center;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mt12{margin-top:12px}.mt16{margin-top:16px}
+.divider{height:1px;background:var(--line-200);margin:16px 0}
+.nowrap{white-space:nowrap}
+.center{text-align:center}
+
+.icon{width:18px;height:18px;flex:0 0 auto;display:inline-block;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.icon-sm{width:15px;height:15px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--brand-600);color:#fff;border-radius:var(--r-sm);padding:9px 16px;font-weight:600;font-size:.85rem;transition:background .15s;white-space:nowrap;border:1px solid var(--brand-600)}
+.btn:hover{background:var(--brand-700);border-color:var(--brand-700)}
+.btn .icon{width:16px;height:16px}
+.btn.ghost{background:var(--surface);color:var(--ink-700);border-color:var(--line-200)}
+.btn.ghost:hover{background:var(--surface-soft);border-color:var(--ink-300)}
+.btn.soft{background:var(--brand-50);color:var(--brand-700);border-color:var(--brand-100)}
+.btn.danger{background:var(--danger-600);border-color:var(--danger-600)}
+.btn.sm{padding:6px 11px;font-size:.78rem}
+.btn.sm .icon{width:14px;height:14px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.icon-btn{background:transparent;border:1px solid transparent;border-radius:var(--r-sm);width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-600)}
+.icon-btn:hover{background:var(--surface-muted)}
+
+label.field{display:block;margin-bottom:14px}
+label.field>span{display:block;font-size:.78rem;font-weight:600;color:var(--ink-700);margin-bottom:5px}
+input[type=text],input[type=email],input[type=password],input[type=tel],input[type=date],input[type=number],select,textarea{width:100%;padding:9px 12px;border:1px solid var(--line-200);border-radius:var(--r-sm);background:var(--surface);color:var(--ink-900);outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--brand-600);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+textarea{resize:vertical;min-height:44px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);overflow:hidden}
+.card-pad{padding:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line-200);flex-wrap:wrap}
+.card-head h3{font-size:.92rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.card-body{padding:18px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:var(--r-full);font-size:.71rem;font-weight:600;white-space:nowrap}
+.badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge.ok{background:var(--ok-50);color:var(--ok-700)}
+.badge.warn{background:var(--warn-50);color:var(--warn-700)}
+.badge.danger{background:var(--danger-50);color:var(--danger-700)}
+.badge.info{background:var(--info-50);color:var(--info-700)}
+.badge.gray{background:var(--surface-muted);color:var(--ink-600)}
+.badge.brand{background:var(--brand-50);color:var(--brand-700)}
+.badge.violet{background:var(--purple-50);color:var(--purple-700)}
+
+.shell{display:flex;min-height:100dvh;--accent:var(--brand-600);--accent-700:var(--brand-700);--accent-50:var(--brand-50)}
+.shell[data-role="worker"]{--accent:#2563eb;--accent-700:#1d4ed8;--accent-50:#eff6ff}
+.shell[data-role="child"]{--accent:#7c3aed;--accent-700:#6d28d9;--accent-50:#f5f3ff}
+.sidebar{width:var(--sidebar-w);flex:0 0 var(--sidebar-w);background:var(--surface);border-right:1px solid var(--line-200);padding:16px 12px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100dvh;overflow-y:auto;z-index:60}
+.side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 20px;font-weight:700;font-size:1rem;letter-spacing:-.02em}
+.side-brand small{display:block;font-size:.62rem;font-weight:600;color:var(--ink-500);letter-spacing:.05em;text-transform:uppercase;margin-top:1px}
+.logo-mark{width:34px;height:34px;border-radius:var(--r-md);display:grid;place-items:center;flex:0 0 34px;overflow:hidden}
+.logo-mark svg{width:100%;height:100%;display:block}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);color:var(--ink-600);font-weight:500;font-size:.85rem;text-align:left;width:100%;transition:background .12s}
+.nav-item .icon{width:17px;height:17px;color:var(--ink-400)}
+.nav-item:hover{background:var(--surface-muted);color:var(--ink-900)}
+.nav-item.active{background:var(--accent-50);color:var(--accent-700);font-weight:600}
+.nav-item.active .icon{color:var(--accent-700)}
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-200)}
+.side-user{display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--r-sm);background:var(--surface-soft);border:1px solid var(--line-200);width:100%;text-align:left;cursor:pointer}
+.side-user:hover{border-color:var(--accent);background:var(--accent-50)}
+.avatar{width:34px;height:34px;border-radius:var(--r-md);background:linear-gradient(140deg,var(--accent),var(--accent-700));display:grid;place-items:center;color:#fff;font-weight:700;font-size:.75rem;flex:0 0 34px}
+.side-user .nm{font-size:.8rem;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-user .rl{font-size:.68rem;color:var(--ink-500);text-transform:capitalize}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 24px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line-200)}
+.tb-title{font-size:.95rem;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-right{display:flex;align-items:center;gap:10px}
+.role-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--r-full);font-size:.72rem;font-weight:600;background:var(--accent-50);color:var(--accent-700)}
+.role-pill .icon{width:13px;height:13px}
+.tb-avatar{display:flex;align-items:center;gap:8px;padding:3px 11px 3px 3px;border-radius:var(--r-full);background:var(--surface-soft);border:1px solid var(--line-200);cursor:pointer}
+.tb-avatar .avatar{width:28px;height:28px;flex:0 0 28px;border-radius:var(--r-sm);font-size:.68rem}
+.tb-avatar span{font-size:.8rem;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.content{padding:24px;width:100%;max-width:1340px;margin:0 auto;flex:1}
+
+.menu-btn{display:none}
+.scrim{position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:55;display:none}
+.scrim.show{display:block}
+@media(max-width:900px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .24s ease;box-shadow:var(--shadow-sm)}
+  .sidebar.open{transform:translateX(0)}
+  .menu-btn{display:inline-flex}
+  .topbar{padding:10px 16px}
+  .role-pill{display:none}
+  .content{padding:16px}
+}
+@media(min-width:901px){.scrim{display:none!important}}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-xs)}
+.kpi .k-top{margin-bottom:10px}
+.kpi .k-ic{width:32px;height:32px;border-radius:var(--r-sm);display:grid;place-items:center;background:var(--k-soft);color:var(--k)}
+.kpi .k-ic .icon{width:17px;height:17px}
+.kpi .k-val{font-size:1.4rem;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.kpi .k-lbl{font-size:.75rem;color:var(--ink-500);margin-top:2px;font-weight:500}
+.kpi.teal{--k:var(--brand-700);--k-soft:var(--brand-50)}
+.kpi.amber{--k:var(--warn-700);--k-soft:var(--warn-50)}
+.kpi.red{--k:var(--danger-700);--k-soft:var(--danger-50)}
+.kpi.blue{--k:var(--info-700);--k-soft:var(--info-50)}
+.kpi.green{--k:var(--ok-700);--k-soft:var(--ok-50)}
+.kpi.violet{--k:var(--purple-700);--k-soft:var(--purple-50)}
+
+.bar-row{display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center;padding:6px 0}
+.bar-track{height:8px;border-radius:var(--r-full);background:var(--surface-muted);overflow:hidden}
+.bar-fill{height:100%;border-radius:var(--r-full);background:var(--brand-600)}
+.bar-fill.warn{background:var(--warn-600)}
+.bar-fill.danger{background:var(--danger-600)}
+.bar-val{font-size:.78rem;font-weight:600;text-align:right}
+
+.table-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;min-width:640px}
+table.tbl th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-500);font-weight:600;padding:10px 14px;background:var(--surface-soft);border-bottom:1px solid var(--line-200);white-space:nowrap}
+table.tbl td{padding:12px 14px;border-bottom:1px solid var(--line-100);font-size:.85rem;vertical-align:middle}
+table.tbl tbody tr:hover{background:var(--surface-soft)}
+.tbl .t-strong{font-weight:600}
+
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-100)}
+.list-row:last-child{border-bottom:none}
+.list-row .lr-main{flex:1;min-width:0}
+.list-row .lr-t{font-weight:600;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-row .lr-s{font-size:.75rem;color:var(--ink-500)}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar .grow{flex:1;min-width:160px}
+.empty{padding:40px 20px;text-align:center;color:var(--ink-500)}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(3px)}
+.modal{background:var(--surface);border-radius:var(--r-lg);width:100%;max-width:540px;max-height:92dvh;overflow-y:auto;box-shadow:0 20px 60px rgba(15,23,42,.2)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 14px;border-bottom:1px solid var(--line-200)}
+.modal-head h3{font-size:1rem;font-weight:600}
+.modal-body{padding:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,24px);background:var(--ink-900);color:#fff;padding:12px 20px;border-radius:var(--r-md);font-size:.85rem;font-weight:500;box-shadow:0 12px 32px rgba(15,23,42,.24);opacity:0;pointer-events:none;transition:.24s;z-index:300;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.ok{background:var(--brand-700)}
+#toast.err{background:var(--danger-700)}
+
+.land{min-height:100dvh}
+.land-nav{display:flex;align-items:center;gap:16px;padding:14px 24px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line-200);position:sticky;top:0;z-index:40;flex-wrap:wrap}
+.land-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem}
+.land-brand .logo-mark{width:32px;height:32px;flex:0 0 32px}
+.land-nav-actions{display:flex;gap:8px;align-items:center;margin-left:auto}
+.land-hero{padding:72px 24px 60px;max-width:900px;margin:0 auto;text-align:center}
+.land-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-700);background:var(--brand-50);border:1px solid var(--brand-100);padding:4px 12px;border-radius:var(--r-full);margin-bottom:22px}
+.land-hero h1{font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-.03em;line-height:1.08;max-width:16ch;margin:0 auto 20px}
+.land-hero h1 .accent{color:var(--brand-600)}
+.land-lead{font-size:1.02rem;line-height:1.65;color:var(--ink-600);max-width:52ch;margin:0 auto 32px}
+.land-hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.land-section{padding:48px 24px;max-width:1000px;margin:0 auto}
+.land-section-title{font-size:1.4rem;font-weight:700;margin-bottom:16px;text-align:center}
+.land-demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.land-demo-card{display:flex;flex-direction:column;gap:6px;padding:16px;background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-md);text-align:left;cursor:pointer}
+.land-demo-card:hover{border-color:var(--brand-200)}
+.land-demo-card strong{font-size:.88rem;font-weight:600}
+.land-demo-card code{font-size:.74rem;font-family:ui-monospace,monospace;color:var(--ink-700);background:var(--surface-muted);padding:2px 6px;border-radius:4px;align-self:flex-start}
+.land-footer{border-top:1px solid var(--line-200);padding:28px 24px;text-align:center;color:var(--ink-500);font-size:.8rem;line-height:1.6;background:var(--surface-soft)}
+
+.auth{min-height:100dvh;display:grid;grid-template-columns:1fr 1fr}
+.auth-brand{background:linear-gradient(160deg,var(--brand-700),var(--brand-600));color:#fff;padding:40px 44px;display:flex;flex-direction:column;justify-content:space-between}
+.auth-brand .logo-mark{width:40px;height:40px;flex:0 0 40px;margin-bottom:28px}
+.auth-brand h1{font-size:1.65rem;font-weight:700;line-height:1.25;max-width:20ch;margin-bottom:14px}
+.auth-brand .lead{font-size:.92rem;opacity:.88;max-width:40ch;line-height:1.65}
+.auth-panel{display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.auth-box{width:100%;max-width:380px}
+.auth-tabs{display:flex;gap:4px;background:var(--surface-muted);padding:4px;border-radius:var(--r-sm);margin:22px 0}
+.auth-tabs button{flex:1;padding:8px;border-radius:5px;font-weight:600;font-size:.83rem;color:var(--ink-500)}
+.auth-tabs button.active{background:var(--surface);color:var(--ink-900);box-shadow:var(--shadow-xs)}
+.demo-box{margin-top:20px;border:1px solid var(--line-200);border-radius:var(--r-md);padding:14px;background:var(--surface-soft)}
+.demo-box h4{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-500);margin-bottom:10px;font-weight:700}
+.demo-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-200);font-size:.78rem;flex-wrap:wrap}
+.demo-row:last-child{border-bottom:none}
+.demo-row code{background:var(--surface);border:1px solid var(--line-200);padding:2px 6px;border-radius:4px;font-size:.72rem;font-family:ui-monospace,monospace}
+.link-btn{color:var(--brand-700);font-weight:600;font-size:.74rem;padding:0 0 0 4px}
+@media(max-width:900px){.auth{grid-template-columns:1fr}.auth-brand{display:none}.auth-panel{padding:32px 20px 40px;align-items:flex-start}}
+
+.context-banner{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r-md);border:1px solid var(--line-200);margin-bottom:18px;background:var(--surface-soft)}
+.context-banner .cb-ic{width:36px;height:36px;border-radius:var(--r-sm);background:var(--surface);display:grid;place-items:center;flex:0 0 36px;border:1px solid var(--line-200)}
+.context-banner h4{font-size:.88rem;font-weight:600;margin-bottom:2px}
+.context-banner p{font-size:.79rem;color:var(--ink-600);line-height:1.5}
+.cb-warn{background:var(--warn-50);border-color:#fde68a}
+.cb-follow{background:#fff7ed;border-color:#fed7aa}
+.cb-geo{background:#ecfeff;border-color:#a5f3fc}
+.cb-voice{background:var(--purple-50);border-color:#ddd6fe}
+.cb-live{background:var(--ok-50);border-color:#a7f3d0}
+.disclaimer-box{margin-top:14px;padding:12px 14px;border-radius:var(--r-sm);background:var(--surface-soft);border:1px solid var(--line-200);font-size:.74rem;color:var(--ink-500);line-height:1.6}
+
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--line-200)}
+.tl-item{position:relative;padding-bottom:16px}
+.tl-item::before{content:"";position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2.5px solid var(--ink-300)}
+.tl-item.done::before{border-color:var(--ok-600);background:var(--ok-600)}
+.tl-item.overdue::before{border-color:var(--danger-600);background:var(--danger-600)}
+.tl-item .tl-t{font-weight:600;font-size:.85rem}
+.tl-item .tl-s{font-size:.74rem;color:var(--ink-500)}
+
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.kv .kv-i .k{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-500);font-weight:600}
+.kv .kv-i .v{font-size:.85rem;font-weight:600;margin-top:2px}
+
+.cols-2{display:grid;grid-template-columns:1.35fr 1fr;gap:16px}
+@media(max-width:1000px){.cols-2{grid-template-columns:1fr}}
+
+.sync-banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--r-md);background:var(--warn-50);border:1px solid #fde68a;margin-bottom:16px;flex-wrap:wrap}
+.sync-banner.online{background:var(--ok-50);border-color:#a7f3d0}
+.sync-banner .sync-dot{width:10px;height:10px;border-radius:50%;background:var(--warn-600);box-shadow:0 0 0 4px rgba(217,119,6,.15)}
+.sync-banner.online .sync-dot{background:var(--ok-600);box-shadow:0 0 0 4px rgba(5,150,105,.15)}
+.sync-banner .sync-main{flex:1;min-width:180px}
+.sync-banner .sync-title{font-weight:600;font-size:.87rem}
+.sync-banner .sync-sub{font-size:.76rem;color:var(--ink-600)}
+
+#leaflet-map{width:100%;height:440px;border-radius:0 0 var(--r-lg) var(--r-lg);background:var(--surface-muted);z-index:0}
+@media(max-width:700px){#leaflet-map{height:320px}}
+.map-legend{display:flex;gap:16px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line-200);font-size:.75rem;color:var(--ink-500)}
+.lg-item{display:inline-flex;align-items:center;gap:6px}
+.lg-item i{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+.voice-shell{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.voice-shell{grid-template-columns:1fr}}
+.voice-lang{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px}
+.voice-lang button{padding:9px;border-radius:var(--r-sm);border:1px solid var(--line-200);background:var(--surface);font-weight:600;font-size:.8rem}
+.voice-lang button.active{background:var(--brand-50);border-color:var(--brand-100);color:var(--brand-700)}
+.voice-mic-btn{width:88px;height:88px;border-radius:50%;background:var(--danger-600);color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px rgba(220,38,38,.25);margin:0 auto}
+.voice-mic-btn .icon{width:34px;height:34px}
+.voice-transcript{min-height:64px;border:1px dashed var(--ink-300);border-radius:var(--r-sm);padding:12px;font-size:.85rem;background:var(--surface-soft);margin-bottom:10px}
+.voice-response{background:var(--brand-50);border:1px solid var(--brand-100);border-radius:var(--r-sm);padding:14px;font-size:.85rem;line-height:1.6;min-height:56px}
+
+.cap-row{display:grid;grid-template-columns:220px 130px 1fr;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line-100)}
+.cap-row:last-child{border-bottom:none}
+.cap-name{font-weight:600;font-size:.88rem}
+.cap-note{font-size:.8rem;color:var(--ink-600);line-height:1.5}
+@media(max-width:700px){.cap-row{grid-template-columns:1fr;gap:4px}}
+.tag-live{background:var(--ok-50);color:var(--ok-700);border:1px solid #a7f3d0}
+.tag-demo{background:var(--info-50);color:var(--info-700);border:1px solid #bfdbfe}
+.tag-mock{background:var(--warn-50);color:var(--warn-700);border:1px solid #fde68a}
+.tag-needs{background:var(--danger-50);color:var(--danger-700);border:1px solid #fecaca}
+
+.support-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.support-layout{grid-template-columns:1fr}}
+.concern-card{border:1px solid var(--line-200);border-radius:var(--r-md);padding:16px;margin-bottom:12px;background:var(--surface)}
+.concern-card.resolved{opacity:.7;background:var(--surface-soft)}
+.concern-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.concern-title{font-weight:600;font-size:.92rem}
+.concern-meta{font-size:.75rem;color:var(--ink-500);margin-bottom:8px}
+.concern-body{font-size:.85rem;color:var(--ink-700);margin-bottom:12px;background:var(--surface-soft);padding:10px;border-radius:var(--r-sm)}
+.reply-box{background:var(--brand-50);border-left:3px solid var(--brand-600);padding:10px;margin-bottom:8px;font-size:.85rem}
+
+.loading{display:flex;align-items:center;justify-content:center;padding:60px 20px;color:var(--ink-500)}
+.spinner{width:24px;height:24px;border:3px solid var(--line-200);border-top-color:var(--brand-600);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+"use strict";
+
+/* ============ ICONS ============ */
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',
+  person:'<circle cx="12" cy="8" r="4"/><path d="M5 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"/>',
+  baby:'<circle cx="12" cy="9" r="5"/><path d="M9 9h.01M15 9h.01M9.5 12a3 3 0 0 0 5 0"/>',
+  syringe:'<path d="m18 2 4 4"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/>',
+  map:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  mic:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>',
+  clipboardCheck:'<path d="M9 2h6a2 2 0 0 1 2 2v1h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V4a2 2 0 0 1 2-2z"/><path d="m9 14 2 2 4-4"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  menu:'<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  alert:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  send:'<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+  arrowLeft:'<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+  arrowRight:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  messageCircle:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  wifi:'<path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+  wifiOff:'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+  phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>'
+};
+function icon(n,c){return `<svg class="icon${c?' '+c:''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;}
+const LOGO = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#0f766e"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#lg)"/><path d="M20 8 L30 12 V21 C30 27 25 31 20 33 C15 31 10 27 10 21 V12 Z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 15 V26 M15 20.5 H25" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+
+/* ============ UTILS ============ */
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initials = n => String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const todayISO = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const addDays = (iso,n)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+const fmtDate = iso => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+const relDue = iso => {
+  const d = Math.round((new Date(iso+'T00:00:00') - new Date(todayISO()+'T00:00:00'))/86400000);
+  if(d===0) return 'Today'; if(d===1) return 'Tomorrow'; if(d<0) return `${Math.abs(d)}d overdue`; return `in ${d}d`;
+};
+const hashPw = pw => { let h=5381; const s='vax$'+pw; for(let i=0;i<s.length;i++) h=((h<<5)+h)^s.charCodeAt(i); return 'h'+(h>>>0).toString(16); };
+const genId = p => p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const genChildId = () => {
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r='';
+  for(let i=0;i<4;i++) r+=c[Math.floor(Math.random()*c.length)];
+  return `VR-${new Date().getFullYear()}-${r}`;
+};
+let _toastTimer;
+function toast(msg, type){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type||'ok');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.className = ''; }, 3400);
+}
+function openModal(html){ document.getElementById('modal-root').innerHTML = `<div class="modal-backdrop" onclick="if(event.target===this)App.closeModal()" role="dialog" aria-modal="true"><div class="modal">${html}</div></div>`; }
+function closeModal(){ document.getElementById('modal-root').innerHTML = ''; }
+
+function priorityBadge(p){
+  const m={urgent:['danger','Urgent'],high:['warn','High'],medium:['warn','Medium'],low:['gray','Low']};
+  const [c,l]=m[p]||['gray',p];
+  return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
+}
+function statusBadge(s){
+  const m={new:['info','New'],needs_verification:['violet','Needs Verification'],assigned:['brand','Assigned'],awaiting_response:['warn','Awaiting Response'],resolved:['ok','Resolved'],unable_to_confirm:['gray','Unable to Confirm'],completed:['ok','Completed'],overdue:['danger','Overdue'],due:['warn','Due soon'],upcoming:['gray','Upcoming']};
+  const [c,l]=m[s]||['gray',s];
+  return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
+}
+
+/* ============ STORAGE ============ */
+const KEY = 'vaxreach.data.v1';
+const SESSION = 'vaxreach.session.v1';
+const Store = {
+  load(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; } },
+  save(db){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ toast('Storage full', 'err'); } },
+  clear(){ localStorage.removeItem(KEY); localStorage.removeItem(SESSION); }
+};
+
+/* ============ SEED ============ */
+const VACCINES = [
+  {code:'BCG',ageDays:0},{code:'HepB0',ageDays:0},{code:'OPV0',ageDays:0},
+  {code:'OPV1',ageDays:42},{code:'PENTA1',ageDays:42},{code:'PCV1',ageDays:42},{code:'ROTA1',ageDays:42},
+  {code:'OPV2',ageDays:70},{code:'PENTA2',ageDays:70},{code:'PCV2',ageDays:70},{code:'ROTA2',ageDays:70},
+  {code:'OPV3',ageDays:98},{code:'PENTA3',ageDays:98},{code:'PCV3',ageDays:98},{code:'IPV',ageDays:98},
+  {code:'MR1',ageDays:274},{code:'MR2',ageDays:456}
+];
+
+
+const SAMPLE_CASE_FACTORS = {
+  case_01:{overdue:90,repeatedMissed:80,contactDifficulty:80,accessBarrier:40},
+  case_02:{overdue:80,repeatedMissed:60,contactDifficulty:55,accessBarrier:40},
+  case_03:{overdue:70,repeatedMissed:50,contactDifficulty:50,accessBarrier:50},
+  case_04:{overdue:90,repeatedMissed:80,contactDifficulty:80,accessBarrier:67},
+  case_05:{overdue:60,repeatedMissed:20,contactDifficulty:50,accessBarrier:40},
+  case_06:{overdue:80,repeatedMissed:60,contactDifficulty:75,accessBarrier:40}
+};
+function calculateFollowUpScore(f){
+  const v=f||{};
+  return Math.round((Number(v.overdue)||0)*.4+(Number(v.repeatedMissed)||0)*.25+
+    (Number(v.contactDifficulty)||0)*.2+(Number(v.accessBarrier)||0)*.15);
+}
+function priorityForScore(n){ return n>=75?'urgent':n>=50?'high':n>=25?'medium':'low'; }
+function caseTypeLabel(t){ return ({missed_session:'Missed vaccination follow-up',unreachable:'Could not reach your caregiver'})[t]||String(t||'Follow-up').replace(/_/g,' '); }
+function childCaseStatusLabel(s){ return ({new:'Being reviewed',needs_verification:'Checking the details',assigned:'A health worker is following up',awaiting_response:'Waiting for a reply',resolved:'Completed',unable_to_confirm:'Could not confirm'})[s]||'Being reviewed'; }
+function childCaseDescription(t){
+  if(t==='missed_session') return 'A vaccination visit appears to have been missed. A health worker can check the record and help with the next step.';
+  if(t==='unreachable') return 'The health team could not reach your trusted adult to confirm a detail. Ask them to contact the health worker if help is needed.';
+  return 'A health worker is checking a detail in this record. Ask your trusted adult or contact the health team if something looks wrong.';
+}
+function childLoginEmail(id){ return id==='c_1'?'child@vaxreach.demo':id==='c_2'?'aahana@vaxreach.demo':id==='c_3'?'child2@vaxreach.demo':id+'@vaxreach.demo'; }
+function migrateChildAccounts(db){
+  const used=new Set();
+  (db.children||[]).forEach(c=>{
+    let u=db.users.find(x=>x.role==='child'&&x.id===c.accountId);
+    if(!u) u=db.users.find(x=>x.role==='child'&&!used.has(x.id)&&String(x.name||'').toLowerCase()===String(c.name||'').toLowerCase());
+    if(!u&&c.guardianId){const old=db.users.find(x=>x.id===c.guardianId&&x.role==='child'&&!used.has(x.id));if(old)u=old;}
+    if(!u){let id='u_'+c.id+'_account';while(db.users.some(x=>x.id===id))id+='_new';u={id,name:c.name,email:childLoginEmail(c.id),password:hashPw('child123'),role:'child',phone:c.phone||'',active:true,createdAt:new Date().toISOString()};db.users.push(u);}
+    u.name=c.name;u.email=u.email||childLoginEmail(c.id);c.accountId=u.id;delete c.guardianId;used.add(u.id);
+  });
+}
+function migrateCaseScores(db){
+  (db.cases||[]).forEach(c=>{
+    const f=c.factors||{};
+    if('overdueRate' in f||'relocation' in f)c.factors=SAMPLE_CASE_FACTORS[c.id]?{...SAMPLE_CASE_FACTORS[c.id]}:{overdue:Number(f.overdueRate)||0,repeatedMissed:Number(f.repeatedMissed)||0,contactDifficulty:Number(f.access)||0,accessBarrier:Number(f.relocation)||0};
+    c.factors=c.factors||{overdue:0,repeatedMissed:0,contactDifficulty:0,accessBarrier:0};
+    c.score=calculateFollowUpScore(c.factors);c.priority=priorityForScore(c.score);
+  });
+}
+function childRecordFor(u){ return scopeChildren(u)[0]||null; }
+function nearestCampFor(child){
+  const list=DB.camps.filter(c=>c.endDate>=todayISO()&&c.status!=='cancelled');
+  return list.sort((a,b)=>{
+    const ar=a.community===child.community?0:a.district===child.district?1:2;
+    const br=b.community===child.community?0:b.district===child.district?1:2;
+    return ar-br||a.startDate.localeCompare(b.startDate);
+  })[0]||null;
+}
+
+function seed(){
+  const now = new Date().toISOString();
+  const today = todayISO();
+  const db = { users:[], households:[], children:[], schedules:[], cases:[], history:[], notes:[], visits:[], camps:[], reasons:[], requests:[], messages:[], audit:[], consents:[], config:{approved:false,source:'Demo seeded placeholder — NOT clinically verified'} };
+
+  const users = [
+    ['u_admin','Dr. Anjali Patnaik','admin@vaxreach.demo','admin123','admin','+91 674 555 0101','Odisha HFW (DEMO)'],
+    ['u_worker1','Priyanka Das','worker@vaxreach.demo','worker123','worker','+91 674 555 0102','Salia Sahi UHC (DEMO)'],
+    ['u_worker2','Suresh Behera','worker2@vaxreach.demo','worker123','worker','+91 674 555 0103','Bidanasi UHC (DEMO)'],
+    ['u_worker3','Kabita Nayak','worker3@vaxreach.demo','worker123','worker','+91 674 555 0113','Puri District Hospital (DEMO)'],
+  ];
+  users.forEach(([id,name,email,pw,role,phone,fac])=>{
+    db.users.push({id,name,email,password:hashPw(pw),role,phone,facility:fac,active:true,createdAt:now});
+  });
+
+  const hhs = [
+    ['h_1','Sasmita Panda','+91 674 555 0104','Salia Sahi','Khordha','Salia Sahi, Bhubaneswar',20.2961,85.8194],
+    ['h_2','Rakesh Mohanty','+91 674 555 0105','Bidanasi','Cuttack','Bidanasi, Cuttack',20.4820,85.8650],
+    ['h_3','Sudha Sahu','+91 674 555 0106','Bidanasi','Cuttack','Malgodown, Cuttack',20.4780,85.8720],
+    ['h_4','Rina Jena','+91 674 555 0107','Salia Sahi','Khordha','Salia Sahi, Sector 2',20.2980,85.8220],
+    ['h_5','Debashis Nayak','+91 674 555 0108','Niladri Vihar','Khordha','Niladri Vihar, Bhubaneswar',20.3010,85.8330],
+    ['h_6','Mamata Pradhan','+91 674 555 0109','Puri Sahi','Puri','Puri Sahi, Puri',19.8135,85.8312],
+    ['h_7','Sukanta Rout','+91 674 555 0110','Khetrajpur','Sambalpur','Khetrajpur, Sambalpur',21.4669,83.9812],
+    ['h_8','Anita Padhi','+91 674 555 0111','Gosani Nuagaon','Ganjam','Gosani Nuagaon, Berhampur',19.3150,84.7941],
+    ['h_9','Bikash Mohapatra','+91 674 555 0112','Rourkela','Sundargarh','Civil Township, Rourkela',22.2604,84.8536],
+    ['h_10','Pravati Das','+91 674 555 0114','Balasore','Balasore','Sahadevkhunta, Balasore',21.4934,86.9335]
+  ];
+  hhs.forEach(([id,head,phone,comm,dist,addr,lat,lng])=>{
+    db.households.push({id,head,phone,community:comm,district:dist,address:addr,lat,lng,createdAt:now});
+  });
+
+  const kids = [
+    ['c_1','Aditya Panda',130,'Male','u_child1','h_1','u_worker1'],
+    ['c_2','Aahana Panda',45,'Female','u_child3','h_1','u_worker1'],
+    ['c_3','Bibhu Mohanty',240,'Male','u_child2','h_2','u_worker2'],
+    ['c_4','Riya Sahu',390,'Female','u_child4','h_3','u_worker2'],
+    ['c_5','Sohan Jena',20,'Male','u_child5','h_4','u_worker1'],
+    ['c_6','Ananya Nayak',610,'Female','u_child6','h_5','u_worker1'],
+    ['c_7','Dibya Pradhan',100,'Female','u_child7','h_6','u_worker3'],
+    ['c_8','Ipsita Rout',330,'Female','u_child8','h_7','u_worker2'],
+    ['c_9','Omkar Padhi',70,'Male','u_child9','h_8','u_worker1'],
+    ['c_10','Subham Mohapatra',180,'Male','u_child10','h_9','u_worker2'],
+    ['c_11','Sneha Das',220,'Female','u_child11','h_10','u_worker3']
+  ];
+  kids.forEach(([id,name,ageDays,sex,accountId,hhId,workerId],idx)=>{
+    const hh = hhs.find(h=>h[0]===hhId);
+    const dob = addDays(today, -ageDays);
+    db.users.push({id:accountId,name,email:childLoginEmail(id),password:hashPw('child123'),role:'child',phone:hh[2],facility:'',active:true,createdAt:now});
+    db.children.push({id,uniqueId:genChildId(),name,dob,sex,accountId,householdId:hhId,
+      guardianName:hh[1],phone:hh[2],community:hh[3],district:hh[4],assignedWorkerId:workerId,createdAt:now});
+    VACCINES.forEach(v=>{
+      const due = addDays(dob, v.ageDays);
+      const past = due < today;
+      let admin = null;
+      if(past){
+        const defaulter = id !== 'c_1' && idx % 4 === 0;
+        if(Math.random() < (defaulter ? 0.3 : 0.95)) admin = addDays(due, Math.floor(Math.random()*10));
+      }
+      db.schedules.push({id:'s_'+id+'_'+v.code, childId:id, vaccineCode:v.code, dueDate:due,
+        administeredDate:admin, status: admin?'completed':(past?'overdue':'due'),
+        source:'Demo seeded', verified:false});
+    });
+  });
+
+  const cases = [
+    ['case_01','c_1','h_1','missed_session','new',null,null,null],
+    ['case_02','c_3','h_2','missed_session','needs_verification',null,null,null],
+    ['case_03','c_5','h_4','missed_session','assigned','u_worker1','sick','Visit on 15th'],
+    ['case_04','c_6','h_5','unreachable','awaiting_response','u_worker1','no_sms','Call again'],
+    ['case_05','c_9','h_8','missed_session','resolved','u_worker1','forgot','Completed'],
+    ['case_06','c_4','h_3','missed_session','assigned','u_worker2','away','Follow up next week']
+  ];
+  cases.forEach(([id,childId,hhId,type,status,assignee,reason,nextAction])=>{
+    const factors={...SAMPLE_CASE_FACTORS[id]},score=calculateFollowUpScore(factors);
+    db.cases.push({id,childId,householdId:hhId,type,status,assignedTo:assignee,reason,nextAction,score,priority:priorityForScore(score),factors,createdAt:now,updatedAt:now});
+    db.history.push({id:genId('h'),caseId:id,actorId:'system',actorName:'System',action:'Follow-up created (demo seed)',at:now});
+  });
+
+  db.camps = [
+    {id:'camp_01',title:'Salia Sahi Immunisation Camp',community:'Salia Sahi',district:'Khordha',facility:'Salia Sahi UHC',lat:20.2961,lng:85.8194,startDate:addDays(today,-2),endDate:addDays(today,5),status:'active',leadId:'u_worker1',services:'Routine immunisation, growth monitoring',capacity:80},
+    {id:'camp_02',title:'Bidanasi MR Catch-up',community:'Bidanasi',district:'Cuttack',facility:'Bidanasi UHC',lat:20.4820,lng:85.8650,startDate:addDays(today,1),endDate:addDays(today,9),status:'planned',leadId:'u_worker2',services:'MR1 / MR2 catch-up',capacity:120},
+    {id:'camp_03',title:'Puri Sahi Mobile Session',community:'Puri Sahi',district:'Puri',facility:'Puri District Hospital',lat:19.8135,lng:85.8312,startDate:addDays(today,-4),endDate:addDays(today,2),status:'active',leadId:'u_worker3',services:'Routine immunisation, vitamin A',capacity:60}
+  ];
+
+  db.reasons = [
+    {id:'sick',label:'Child was unwell'},
+    {id:'away',label:'Family was away'},
+    {id:'no_camp',label:'No camp nearby'},
+    {id:'transport',label:'Transport unavailable'},
+    {id:'work',label:'Caregiver work conflict'},
+    {id:'forgot',label:'Forgot appointment'},
+    {id:'no_sms',label:'Did not receive SMS'},
+    {id:'fear',label:'Concern about side effects'},
+    {id:'relocated',label:'Family relocated'},
+    {id:'other',label:'Other'}
+  ];
+
+  db.requests = [
+    {id:'req_1',childId:'c_1',workerId:'u_worker1',category:'Side Effects',sub:'Mild Fever',org:'Salia Sahi UHC',details:'Aditya had a mild fever after the last vaccine.',status:'open',createdAt:now,replies:[]}
+  ];
+
+  db.messages = [
+    {id:'msg_1',childId:'c_3',to:'+91 674 555 0105',body:'VaxReach: Bibhu has a missed vaccination.',channel:'sms',status:'simulated_sent',sentAt:now,sentBy:'u_worker2'}
+  ];
+
+  db.audit.push({id:genId('a'),at:now,actorName:'System',action:'Database seeded (fictional demo data)'});
+  return db;
+}
+
+/* ============ DB ============ */
+let DB = Store.load();
+if(!DB) { DB = seed(); Store.save(DB); }
+else { migrateChildAccounts(DB); migrateCaseScores(DB); Store.save(DB); }
+
+function save(){ Store.save(DB); }
+
+function getSession(){
+  try { return JSON.parse(localStorage.getItem(SESSION)); } catch(e){ return null; }
+}
+function setSession(userId){ localStorage.setItem(SESSION, JSON.stringify({userId,at:Date.now()})); }
+function clearSession(){ localStorage.removeItem(SESSION); }
+
+function currentUser(){
+  const s = getSession();
+  if(!s) return null;
+  return DB.users.find(u=>u.id===s.userId && u.active);
+}
+
+/* ============ RBAC ============ */
+function scopeChildren(u){
+  if(!u) return [];
+  if(u.role==='admin') return DB.children.slice();
+  if(u.role==='worker') return DB.children.filter(c=>c.assignedWorkerId===u.id);
+  if(u.role==='child') return DB.children.filter(c=>c.accountId===u.id).slice(0,1);
+  return [];
+}
+function scopeCases(u){
+  const kids = new Set(scopeChildren(u).map(c=>c.id));
+  return DB.cases.filter(c=>kids.has(c.childId));
+}
+function canAccessChild(u,child){
+  if(!u||!child) return false;
+  if(u.role==='admin') return true;
+  if(u.role==='worker') return child.assignedWorkerId===u.id;
+  if(u.role==='child') return child.accountId===u.id;
+  return false;
+}
+
+function enrichChild(c){
+  const sch = DB.schedules.filter(s=>s.childId===c.id);
+  const pending = sch.filter(s=>!s.administeredDate).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+  const overdue = pending.filter(s=>s.dueDate < todayISO());
+  const days = Math.max(0, Math.round((new Date(todayISO())-new Date(c.dob))/86400000));
+  const ageText = days<31?days+'d':(days<365?Math.floor(days/30.44)+'mo':Math.floor(days/365)+'y');
+  return {...c, ageText, doneCount:sch.filter(s=>s.administeredDate).length, totalCount:sch.length,
+    overdueCount:overdue.length,
+    nextDue: pending[0] ? {vaccineCode:pending[0].vaccineCode,dueDate:pending[0].dueDate} : null,
+    status: overdue.length?'overdue':(pending.length?'due':'complete')};
+}
+function enrichCase(c){
+  const child = DB.children.find(ch=>ch.id===c.childId);
+  const worker = c.assignedTo ? DB.users.find(u=>u.id===c.assignedTo) : null;
+  return {...c, childName:child?child.name:'—', childUniqueId:child?child.uniqueId:'—',
+    community:child?child.community:'—', district:child?child.district:'—',
+    assigneeName: worker?worker.name:null};
+}
+
+/* ============ APP ============ */
+const App = {
+  state:{
+    user:null, screen:'loading', view:'dashboard', params:{},
+    online:navigator.onLine, pendingCount:0,
+    voiceLang:'en', voiceSupported:!!(window.SpeechRecognition||window.webkitSpeechRecognition),
+    voiceTranscript:'', voiceResponse:'', voiceAction:'',
+    reportFilters:{from:addDays(todayISO(),-30), to:todayISO()}
+  },
+  closeModal,
+
+  init(){
+    const u = currentUser();
+    this.state.user = u;
+    this.state.screen = u ? 'app' : 'landing';
+    window.addEventListener('online', () => { this.state.online = true; this.render(); });
+    window.addEventListener('offline', () => { this.state.online = false; this.render(); });
+    this.render();
+  },
+
+  render(){
+    const root = document.getElementById('app');
+    if(this.state.screen==='landing'){ root.innerHTML = this.landingView(); return; }
+    if(this.state.screen==='auth'){ root.innerHTML = this.authView(); return; }
+    if(!this.state.user){ this.state.screen='landing'; return this.render(); }
+
+    const u = this.state.user;
+    const nav = NAV[u.role] || [];
+    const cur = nav.find(i=>i[0]===this.state.view);
+    const title = cur ? cur[1] : 'VaxReach';
+    const navHtml = nav.map(([v,label,ic])=>
+      `<button class="nav-item ${this.state.view===v?'active':''}" onclick="App.goto('${v}')">${icon(ic)}<span>${esc(label)}</span></button>`
+    ).join('');
+
+    let content = '';
+    try {
+      const fn = this[`view_${this.state.view}`];
+      content = fn ? fn.call(this) : '<div class="card card-pad">Not found.</div>';
+    } catch(err){
+      content = `<div class="card card-pad"><strong>Error:</strong> ${esc(err.message)}</div>`;
+    }
+
+    root.innerHTML = this.shell(u, title, navHtml, content);
+    if(this.state.view==='map') setTimeout(()=>this.initMap(), 80);
+  },
+
+  goto(view, params){
+    this.state.view = view;
+    this.state.params = params || {};
+    this.render();
+    window.scrollTo({top:0,behavior:'smooth'});
+  },
+
+  toggleSidebar(open){
+    const sb = document.getElementById('sidebar'), sc = document.getElementById('scrim');
+    if(!sb) return;
+    const o = open === undefined ? !sb.classList.contains('open') : open;
+    sb.classList.toggle('open', o);
+    if(sc) sc.classList.toggle('show', o);
+  },
+
+  showAuth(){ this.state.screen='auth'; this.render(); },
+  showLanding(){ this.state.screen='landing'; this.render(); },
+  fillLogin(email,pw){
+    this.state.screen='auth';
+    this.render();
+    setTimeout(()=>{
+      const e=document.getElementById('login-email'); if(e) e.value=email;
+      const p=document.getElementById('login-password'); if(p) p.value=pw;
+    },30);
+  },
+
+  doLogin(event){
+    event.preventDefault();
+    const f = event.target;
+    const email = f.email.value.trim().toLowerCase();
+    const pw = f.password.value;
+    const user = DB.users.find(u=>u.email.toLowerCase()===email && u.password===hashPw(pw));
+    if(!user){ toast('Invalid email or password', 'err'); return; }
+    if(!user.active){ toast('Account disabled', 'err'); return; }
+    setSession(user.id);
+    this.state.user = user;
+    this.state.screen = 'app';
+    this.state.view = 'dashboard';
+    toast('Welcome, ' + user.name.split(' ')[0]);
+    this.render();
+  },
+
+  doLogout(){
+    clearSession();
+    this.state.user = null;
+    this.state.screen = 'landing';
+    closeModal();
+    toast('Signed out');
+    this.render();
+  },
+
+  /* ============ ACTIONS ============ */
+  doAssignSelf(caseId){
+    const c = DB.cases.find(x=>x.id===caseId);
+    if(!c) return;
+    c.assignedTo = this.state.user.id;
+    c.status = 'assigned';
+    c.updatedAt = new Date().toISOString();
+    DB.history.unshift({id:genId('h'),caseId,actorId:this.state.user.id,actorName:this.state.user.name,action:'Assigned to self',at:c.updatedAt});
+    DB.audit.unshift({id:genId('a'),at:c.updatedAt,actorName:this.state.user.name,action:'Assigned '+caseId});
+    save();
+    toast('Case assigned to you');
+    this.render();
+  },
+  doTransition(caseId, next){
+    const c = DB.cases.find(x=>x.id===caseId);
+    if(!c) return;
+    const prev = c.status;
+    c.status = next;
+    c.updatedAt = new Date().toISOString();
+    DB.history.unshift({id:genId('h'),caseId,actorId:this.state.user.id,actorName:this.state.user.name,action:`Status: ${prev} → ${next}`,at:c.updatedAt});
+    save();
+    toast('Status updated');
+    this.render();
+  },
+
+  openReasonModal(caseId){
+    openModal(`<div class="modal-head"><h3>Reason & next action</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
+      <div class="modal-body"><form onsubmit="App.saveReason(event,'${caseId}')">
+        <label class="field"><span>Reason (non-judgmental)</span>
+          <select name="reason"><option value="">— Select —</option>${DB.reasons.map(r=>`<option value="${r.id}">${esc(r.label)}</option>`).join('')}</select>
+        </label>
+        <label class="field"><span>Next action</span><textarea name="nextAction" rows="2"></textarea></label>
+        <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">Save</button></div>
+      </form></div>`);
+  },
+  saveReason(event, caseId){
+    event.preventDefault();
+    const f = event.target;
+    const c = DB.cases.find(x=>x.id===caseId);
+    if(!c) return;
+    c.reason = f.reason.value || null;
+    c.nextAction = f.nextAction.value.trim() || null;
+    c.updatedAt = new Date().toISOString();
+    DB.history.unshift({id:genId('h'),caseId,actorId:this.state.user.id,actorName:this.state.user.name,action:`Reason: ${c.reason||'—'}`,at:c.updatedAt});
+    save();
+    closeModal();
+    toast('Saved');
+    this.render();
+  },
+
+  openNoteModal(caseId){
+    openModal(`<div class="modal-head"><h3>Add note</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
+      <div class="modal-body"><form onsubmit="App.saveNote(event,'${caseId}')">
+        <label class="field"><span>Note</span><textarea name="text" rows="3" required></textarea></label>
+        <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">Add</button></div>
+      </form></div>`);
+  },
+  saveNote(event, caseId){
+    event.preventDefault();
+    const text = event.target.text.value.trim();
+    if(!text) return;
+    DB.notes.push({id:genId('n'),caseId,text,authorId:this.state.user.id,authorName:this.state.user.name,at:new Date().toISOString()});
+    DB.history.unshift({id:genId('h'),caseId,actorId:this.state.user.id,actorName:this.state.user.name,action:'Note added',at:new Date().toISOString()});
+    save();
+    closeModal();
+    toast('Note added');
+    this.render();
+  },
+
+  openContactModal(caseId){
+    openModal(`<div class="modal-head"><h3>Log contact attempt</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
+      <div class="modal-body"><form onsubmit="App.saveContact(event,'${caseId}')">
+        <label class="field"><span>Outcome</span><select name="outcome">
+          <option value="reached">Reached</option><option value="no_answer">No answer</option>
+          <option value="wrong_number">Wrong number</option><option value="family_moved">Family moved</option>
+          <option value="visit_planned">Visit planned</option><option value="referred">Referred</option>
+        </select></label>
+        <label class="field"><span>Notes</span><textarea name="notes" rows="2"></textarea></label>
+        <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">Record</button></div>
+      </form></div>`);
+  },
+  saveContact(event, caseId){
+    event.preventDefault();
+    const f = event.target;
+    const c = DB.cases.find(x=>x.id===caseId);
+    if(!c) return;
+    if(f.outcome.value === 'reached') c.status = 'awaiting_response';
+    c.updatedAt = new Date().toISOString();
+    DB.history.unshift({id:genId('h'),caseId,actorId:this.state.user.id,actorName:this.state.user.name,action:`Contact: ${f.outcome.value}`,at:c.updatedAt});
+    save();
+    closeModal();
+    toast('Contact logged');
+    this.render();
+  },
+
+  openVisitModal(caseId){
+    const c = DB.cases.find(x=>x.id===caseId);
+    if(!c) return;
+    openModal(`<div class="modal-head"><h3>Record visit — ${esc(c.childName)}</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
+      <div class="modal-body"><form onsubmit="App.saveVisit(event,'${caseId}')">
+        <label class="field"><span>Outcome</span><select name="outcome">
+          <option value="delivered">Delivered</option><option value="not_home">Not home</option>
+          <option value="refused">Refused</option><option value="rescheduled">Rescheduled</option>
+        </select></label>
+        <label class="field"><span>Notes</span><textarea name="notes" rows="2"></textarea></label>
+        <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">Save</button></div>
+      </form></div>`);
+  },
+  saveVisit(event, caseId){
+    event.preventDefault();
+    const f = event.target;
+    const c = DB.cases.find(x=>x.id===caseId);
+    if(!c) return;
+    const now = new Date().toISOString();
+    DB.visits.push({id:genId('v'),caseId,householdId:c.householdId,workerId:this.state.user.id,outcome:f.outcome.value,notes:f.notes.value,at:now});
+    if(f.outcome.value === 'delivered') c.status = 'resolved';
+    else if(f.outcome.value === 'not_home') c.status = 'awaiting_response';
+    c.updatedAt = now;
+    DB.history.unshift({id:genId('h'),caseId,actorId:this.state.user.id,actorName:this.state.user.name,action:`Visit: ${f.outcome.value}`,at:now});
+    save();
+    closeModal();
+    toast('Visit recorded');
+    this.render();
+  },
+
+  openAdministerModal(scheduleId, childId, vaccineCode){
+    openModal(`<div class="modal-head"><h3>Record vaccination</h3><button class="icon-btn" onclick="App.closeModal()">${icon('x')}</button></div>
+      <div class="modal-body">
+        <p class="small muted" style="margin-bottom:14px">${esc(vaccineCode)} — demo schedule, verify with an authorised health professional.</p>
+        <form onsubmit="App.saveVaccination(event,'${scheduleId}')">
+          <label class="field"><span>Date administered</span><input type="date" name="date" value="${todayISO()}" max="${todayISO()}" required /></label>
+          <label class="field"><span>Notes</span><textarea name="notes" rows="2"></textarea></label>
+          <div class="modal-actions"><button type="button" class="btn ghost" onclick="App.closeModal()">Cancel</button><button class="btn" type="submit">Save</button></div>
+        </form>
+      </div>`);
+  },
+  saveVaccination(event, scheduleId){
+    event.preventDefault();
+    const s = DB.schedules.find(x=>x.id===scheduleId);
+    if(!s) return;
+    s.administeredDate = event.target.date.value;
+    s.status = 'completed';
+    s.administeredBy = this.state.user.id;
+    s.notes = event.target.notes.value;
+    save();
+    closeModal();
+    toast('Vaccination recorded');
+    this.render();
+  },
+
+  submitRequest(event){
+    event.preventDefault();
+    const f = event.target;
+    DB.requests.push({
+      id:genId('req'), childId:f.childId.value, workerId:this.state.user.childId ? null : null,
+      category:f.category.value, sub:f.sub.value, org:f.org.value,
+      details:f.details.value, status:'open', createdAt:new Date().toISOString(), replies:[]
+    });
+    save();
+    toast('Concern submitted');
+    this.render();
+  },
+  replyRequest(event, reqId){
+    event.preventDefault();
+    const r = DB.requests.find(x=>x.id===reqId);
+    if(!r) return;
+    r.replies.push({text:event.target.text.value, by:this.state.user.name, at:new Date().toISOString()});
+    r.status = 'resolved';
+    save();
+    toast('Reply sent');
+    this.render();
+  },
+
+  toggleUser(id, active){
+    const u = DB.users.find(x=>x.id===id);
+    if(!u) return;
+    if(u.id===this.state.user.id && !active){ toast('Cannot deactivate yourself', 'err'); return; }
+    u.active = active;
+    save();
+    toast(active ? 'Enabled' : 'Disabled');
+    this.render();
+  },
+
+  saveProfile(event){
+    event.preventDefault();
+    const f = event.target;
+    const u = DB.users.find(x=>x.id===this.state.user.id);
+    u.name = f.name.value.trim();
+    if(f.phone) u.phone = f.phone.value;
+    if(f.facility) u.facility = f.facility.value;
+    this.state.user = u;
+    save();
+    toast('Profile saved');
+    this.render();
+  },
+
+  exportCSV(){
+    const f = this.state.reportFilters;
+    const cases = scopeCases(this.state.user).filter(c=>{
+      const d = c.createdAt.slice(0,10);
+      return d>=f.from && d<=f.to;
+    });
+    const rows = [['Case ID','Child','Type','Status','Reason','Assigned To','Created']];
+    cases.forEach(c=>{
+      const child = DB.children.find(ch=>ch.id===c.childId);
+      const worker = c.assignedTo ? DB.users.find(u=>u.id===c.assignedTo) : null;
+      rows.push([c.id, child?child.name:'', c.type, c.status, c.reason||'', worker?worker.name:'', c.createdAt]);
+    });
+    const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'vaxreach-cases-'+f.from+'-to-'+f.to+'.csv';
+    a.click();
+    toast('CSV downloaded');
+  },
+  setReportFilter(k, v){ this.state.reportFilters[k]=v; this.render(); },
+
+  resetAll(){
+    if(!confirm('Reset all data to demo seed? This erases all your changes.')) return;
+    Store.clear();
+    DB = seed();
+    save();
+    this.state.user = null;
+    this.state.screen = 'landing';
+    toast('Data reset');
+    this.render();
+  },
+
+  exportJSON(){
+    const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'vaxreach-data-'+todayISO()+'.json';
+    a.click();
+    toast('JSON downloaded');
+  },
+
+  setVoiceLang(l){ this.state.voiceLang=l; this.render(); },
+  toggleMic(){
+    if(!this.state.voiceSupported){ toast('Speech not supported — use text', 'err'); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new SR();
+    rec.lang = this.state.voiceLang==='hi' ? 'hi-IN' : this.state.voiceLang==='or' ? 'or-IN' : 'en-IN';
+    rec.continuous = false;
+    rec.onresult = e => { this.state.voiceTranscript = e.results[0][0].transcript; this.answerVoice(this.state.voiceTranscript); };
+    rec.onerror = e => toast('Speech error: ' + e.error, 'err');
+    try { rec.start(); toast('Listening…'); } catch(e){ toast('Cannot start mic', 'err'); }
+  },
+  answerVoice(q){
+    const L=String(q||'').toLowerCase(),child=childRecordFor(this.state.user);
+    this.state.voiceAction='';
+    const messages={
+      en:{noChild:"Sign in with a child account to look up one child's record.",noDose:'No upcoming dose appears in this demo record. Confirm the schedule with a health worker.',dose:d=>`Your record lists ${d.vaccineCode} for ${fmtDate(d.dueDate)}. This demo schedule is not clinically verified; confirm the date with a health worker.`,noCamp:'No upcoming camp is listed in this demo. Contact Support & Contact for help.',camp:c=>`The nearest listed camp is ${c.title} at ${c.facility}, starting ${fmtDate(c.startDate)}. Confirm details before travelling.`,support:'I can open Support & Contact. Ask a trusted adult to contact the health team if you need help.',health:'I cannot assess symptoms or recommend treatment. Tell a trusted adult and contact an authorised health professional.',other:'I can look up your next listed dose or a nearby camp, or help contact the health team.'},
+      hi:{noChild:'एक बच्चे का रिकॉर्ड देखने के लिए बच्चे के खाते से साइन इन करें।',noDose:'इस डेमो रिकॉर्ड में अगली खुराक सूचीबद्ध नहीं है। स्वास्थ्यकर्मी से समय की पुष्टि करें।',dose:d=>`आपके रिकॉर्ड में ${d.vaccineCode} की खुराक ${fmtDate(d.dueDate)} के लिए दी गई है। यह डेमो सूची चिकित्सकीय रूप से सत्यापित नहीं है; पुष्टि करें।`,noCamp:'इस डेमो में आने वाला शिविर सूचीबद्ध नहीं है। सहायता के लिए Support & Contact खोलें।',camp:c=>`निकटतम सूचीबद्ध शिविर ${c.title}, ${c.facility} में है; ${fmtDate(c.startDate)} से शुरू। जाने से पहले पुष्टि करें।`,support:'सहायता के लिए Support & Contact खोलें। किसी भरोसेमंद बड़े से स्वास्थ्य टीम से संपर्क करने को कहें।',health:'मैं लक्षणों का आकलन या इलाज की सलाह नहीं दे सकता। किसी भरोसेमंद बड़े को बताएं और स्वास्थ्यकर्मी से संपर्क करें।',other:'मैं अगली सूचीबद्ध खुराक, पास का शिविर, या स्वास्थ्य टीम से संपर्क करने में मदद कर सकता हूँ।'},
+      or:{noChild:'ଗୋଟିଏ ଶିଶୁର ରେକର୍ଡ ଦେଖିବାକୁ ଶିଶୁ ଖାତାରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ।',noDose:'ଏହି ଡେମୋ ରେକର୍ଡରେ ପରବର୍ତ୍ତୀ ଡୋଜ୍ ନାହିଁ। ସ୍ୱାସ୍ଥ୍ୟକର୍ମୀଙ୍କ ସହ ନିଶ୍ଚିତ କରନ୍ତୁ।',dose:d=>`ଆପଣଙ୍କ ରେକର୍ଡରେ ${d.vaccineCode} ଡୋଜ୍ ${fmtDate(d.dueDate)} ରେ ଅଛି। ଏହା ଡେମୋ ସୂଚୀ; ସ୍ୱାସ୍ଥ୍ୟକର୍ମୀଙ୍କ ସହ ନିଶ୍ଚିତ କରନ୍ତୁ।`,noCamp:'ଏହି ଡେମୋରେ ଆଗାମୀ ଶିବିର ନାହିଁ। ସହାୟତା ପାଇଁ Support & Contact ଖୋଲନ୍ତୁ।',camp:c=>`ନିକଟତମ ଶିବିର ${c.title}, ${c.facility} ରେ ଅଛି; ${fmtDate(c.startDate)} ରୁ ଆରମ୍ଭ। ଯିବା ପୂର୍ବରୁ ନିଶ୍ଚିତ କରନ୍ତୁ।`,support:'ସହାୟତା ପାଇଁ Support & Contact ଖୋଲନ୍ତୁ। ଜଣେ ବିଶ୍ୱସ୍ତ ବୟସ୍କଙ୍କୁ ସ୍ୱାସ୍ଥ୍ୟ ଦଳ ସହ ଯୋଗାଯୋଗ କରିବାକୁ କହନ୍ତୁ।',health:'ମୁଁ ଲକ୍ଷଣ ଯାଞ୍ଚ କିମ୍ବା ଚିକିତ୍ସା ପରାମର୍ଶ ଦେଇପାରିବି ନାହିଁ। ବିଶ୍ୱସ୍ତ ବୟସ୍କଙ୍କୁ କହି ସ୍ୱାସ୍ଥ୍ୟକର୍ମୀଙ୍କ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।',other:'ମୁଁ ପରବର୍ତ୍ତୀ ଡୋଜ୍, ନିକଟତମ ଶିବିର, କିମ୍ବା ସ୍ୱାସ୍ଥ୍ୟ ଦଳ ସହ ଯୋଗାଯୋଗରେ ସାହାଯ୍ୟ କରିପାରିବି।'}
+    }[this.state.voiceLang];
+    if(!child)this.state.voiceResponse=messages.noChild;
+    else if(/(next|when|schedule|vaccin|टीका|खुराक|ଟୀକା|ଡୋଜ୍)/i.test(L)){
+      const doses=DB.schedules.filter(d=>d.childId===child.id&&!d.administeredDate).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+      this.state.voiceResponse=doses.length?messages.dose(doses[0]):messages.noDose;
+    }else if(/(camp|nearest|nearby|कैंप|शिविर|କ୍ୟାମ୍ପ|ଶିବିର)/i.test(L)){
+      const camp=nearestCampFor(child);this.state.voiceResponse=camp?messages.camp(camp):messages.noCamp;
+    }else if(/(missed|report|forgot|help|छूट|भूल|सहायता|ଛାଡ଼ି|ସହାୟତା)/i.test(L)){
+      this.state.voiceResponse=messages.support;this.state.voiceAction='support';
+    }else if(/(side.effect|fever|symptom|दुष्प्रभाव|बुखार|लक्षण|ଜ୍ୱର|ଲକ୍ଷଣ)/i.test(L)){
+      this.state.voiceResponse=messages.health;this.state.voiceAction='support';
+    }else this.state.voiceResponse=messages.other;
+    this.render();
+    if('speechSynthesis'in window){window.speechSynthesis.cancel();const utt=new SpeechSynthesisUtterance(this.state.voiceResponse);utt.lang=this.state.voiceLang==='hi'?'hi-IN':this.state.voiceLang==='or'?'or-IN':'en-IN';window.speechSynthesis.speak(utt);}
+  },
+  askVoice(event){ event.preventDefault(); const q = event.target.q.value.trim(); if(!q) return; this.state.voiceTranscript = q; this.answerVoice(q); },
+  askSuggestion(q){ this.state.voiceTranscript = q; this.answerVoice(q); },
+  clearVoice(){ this.state.voiceTranscript = ''; this.state.voiceResponse = ''; this.state.voiceAction = ''; this.render(); },
+
+  initMap(){
+    const el = document.getElementById('leaflet-map');
+    if(!el || typeof L === 'undefined') return;
+    if(window._map){ try { window._map.remove(); } catch(e){} window._map = null; }
+    const map = L.map('leaflet-map').setView([20.3, 85.5], 8);
+    window._map = map;
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri', maxZoom: 19
+    }).addTo(map);
+    const kids = scopeChildren(this.state.user);
+    const hhIds = new Set(kids.map(c=>c.householdId));
+    const bounds = [];
+    DB.households.filter(h=>hhIds.has(h.id) && typeof h.lat === 'number').forEach(h => {
+      const openCases = DB.cases.filter(c=>c.householdId===h.id && !['resolved','unable_to_confirm'].includes(c.status));
+      const color = openCases.some(c=>c.priority==='urgent') ? '#dc2626' : openCases.length ? '#ea580c' : '#059669';
+      const ic = L.divIcon({className:'', html:`<div style="width:16px;height:16px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>`, iconSize:[16,16], iconAnchor:[8,8]});
+      L.marker([h.lat, h.lng], {icon:ic}).addTo(map).bindPopup(
+        `<strong>${esc(h.head)}</strong><br><small>${esc(h.community)} · ${esc(h.district)}<br>Open cases: ${openCases.length}</small>`
+      );
+      bounds.push([h.lat, h.lng]);
+    });
+    if(bounds.length){ try { map.fitBounds(L.latLngBounds(bounds).pad(0.15)); } catch(e){} }
+    setTimeout(()=>{ try { map.invalidateSize(); } catch(e){} }, 100);
+  },
+
+  /* ============ SHELL ============ */
+  shell(u, title, navHtml, content){
+    const roleLabel = {admin:'Administrator', worker:'Health Worker', child:'Child'}[u.role];
+    const roleIcon = {admin:'shield', worker:'activity', child:'baby'}[u.role];
+    return `<div class="shell" data-role="${u.role}">
+      <div class="scrim" id="scrim" onclick="App.toggleSidebar(false)"></div>
+      <aside class="sidebar" id="sidebar">
+        <div class="side-brand"><div class="logo-mark">${LOGO}</div><div>VaxReach<small>India</small></div></div>
+        <nav>${navHtml}</nav>
+        <div class="side-foot">
+          <button class="side-user" onclick="App.goto('profile')">
+            <div class="avatar">${esc(initials(u.name))}</div>
+            <div style="min-width:0;flex:1"><div class="nm">${esc(u.name)}</div><div class="rl">${roleLabel}</div></div>
+          </button>
+          <button class="nav-item" style="margin-top:6px" onclick="App.doLogout()">${icon('logout')}<span>Sign out</span></button>
+        </div>
+      </aside>
+      <div class="main">
+        <header class="topbar">
+          <button class="icon-btn menu-btn" onclick="App.toggleSidebar(true)" aria-label="Open menu">${icon('menu')}</button>
+          <div class="tb-title">${esc(title)}</div>
+          <div class="tb-right">
+            <span class="badge ${this.state.online ? 'ok' : 'warn'}">${this.state.online ? 'Online' : 'Offline'}</span>
+            <span class="role-pill">${icon(roleIcon)} ${roleLabel}</span>
+            <button class="tb-avatar" onclick="App.goto('profile')"><div class="avatar">${esc(initials(u.name))}</div><span>${esc(u.name.split(' ')[0])}</span></button>
+          </div>
+        </header>
+        <div class="content">${content}</div>
+      </div>
+    </div>`;
+  },
+
+  landingView(){
+    return `<div class="land">
+      <nav class="land-nav">
+        <div class="land-brand"><div class="logo-mark">${LOGO}</div> VaxReach</div>
+        <div class="land-nav-actions"><button class="btn ghost sm" onclick="App.showAuth()">Sign in</button></div>
+      </nav>
+      <section class="land-hero">
+        <span class="land-eyebrow">Odisha immunisation follow-up · Demo</span>
+        <h1>Every child. <span class="accent">Every vaccine.</span> On time.</h1>
+        <p class="land-lead">A single-file working demo. All data saved in your browser. Sign in to explore role-based dashboards, case workflow, and reports.</p>
+        <div class="land-hero-actions"><button class="btn" onclick="App.showAuth()">Sign in to demo</button></div>
+      </section>
+      <section class="land-section">
+        <h2 class="land-section-title">Demo accounts</h2>
+        <div class="land-demo-grid">
+          <button class="land-demo-card" onclick="App.fillLogin('admin@vaxreach.demo','admin123')">
+            <strong>Administrator</strong><code>admin@vaxreach.demo</code><code>admin123</code>
+          </button>
+          <button class="land-demo-card" onclick="App.fillLogin('worker@vaxreach.demo','worker123')">
+            <strong>Health Worker</strong><code>worker@vaxreach.demo</code><code>worker123</code>
+          </button>
+          <button class="land-demo-card" onclick="App.fillLogin('child@vaxreach.demo','child123')">
+            <strong>Child / Family</strong><code>child@vaxreach.demo</code><code>child123</code>
+          </button>
+        </div>
+      </section>
+      <footer class="land-footer">
+        <strong>VaxReach</strong> · Prototype · Data saves in your browser · All records fictional · Not clinically validated
+      </footer>
+    </div>`;
+  },
+
+  authView(){
+    return `<div class="auth">
+      <div class="auth-brand">
+        <div>
+          <div class="logo-mark">${LOGO}</div>
+          <h1>Coordinate immunisation follow-ups.</h1>
+          <p class="lead">Each child account opens one child's own vaccination record. A trusted adult's contact details help the care team follow up.</p>
+        </div>
+        <p class="small" style="opacity:.8">Prototype — not an official registry.</p>
+      </div>
+      <div class="auth-panel">
+        <div class="auth-box">
+          <h2>Sign in</h2>
+          <form onsubmit="App.doLogin(event)" style="margin-top:20px">
+            <label class="field"><span>Email</span><input type="email" name="email" id="login-email" required /></label>
+            <label class="field"><span>Password</span><input type="password" name="password" id="login-password" required /></label>
+            <button class="btn block" type="submit">Sign in</button>
+          </form>
+          <div class="demo-box">
+            <h4>Demo credentials</h4>
+            <div class="demo-row"><span>Admin</span><span><code>admin@vaxreach.demo</code> / <code>admin123</code></span></div>
+            <div class="demo-row"><span>Worker</span><span><code>worker@vaxreach.demo</code> / <code>worker123</code></span></div>
+            <div class="demo-row"><span>Child · Aditya</span><span><code>child@vaxreach.demo</code> / <code>child123</code></span></div>
+            <div class="demo-row"><span>Child · Aahana</span><span><code>aahana@vaxreach.demo</code> / <code>child123</code></span></div>
+            <div class="demo-row"><span>Child · Bibhu</span><span><code>child2@vaxreach.demo</code> / <code>child123</code></span></div>
+            <p class="tiny muted">Each child login opens one child's record. Other demo children use their record ID as email (for example, c_4@vaxreach.demo) and password child123.</p>
+          </div>
+          <div style="margin-top:14px;text-align:center"><button class="link-btn" onclick="App.showLanding()">← Back</button></div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  /* ============ VIEWS ============ */
+  view_dashboard(){
+    const u = this.state.user;
+    if(u.role==='child'){
+      const kids = scopeChildren(u);
+      const child = kids[0];
+      if(!child) return `<div class="card card-pad">No child record linked.</div>`;
+      const ec = enrichChild(child);
+      const cases = scopeCases(u).filter(c=>!['resolved','unable_to_confirm'].includes(c.status));
+      const recent = DB.schedules.filter(s=>s.childId===child.id && s.administeredDate).slice(0,3);
+      return `
+        <div class="context-banner cb-follow"><div class="cb-ic">${icon('info')}</div><div><h4>Hello, ${esc(u.name.split(' ')[0])}</h4><p>Your VaxReach ID is <strong>${esc(child.uniqueId)}</strong>.</p></div></div>
+        <div class="kpi-grid" style="margin-bottom:18px">
+          <div class="kpi teal"><div class="k-top"><div class="k-ic">${icon('baby')}</div></div><div class="k-val">${ec.doneCount}/${ec.totalCount}</div><div class="k-lbl">Doses completed</div></div>
+          <div class="kpi amber"><div class="k-top"><div class="k-ic">${icon('clock')}</div></div><div class="k-val">${ec.overdueCount}</div><div class="k-lbl">Overdue</div></div>
+          <div class="kpi red"><div class="k-top"><div class="k-ic">${icon('clipboardCheck')}</div></div><div class="k-val">${cases.length}</div><div class="k-lbl">Open follow-ups</div></div>
+        </div>
+        <div class="cols-2">
+          <div class="card"><div class="card-head"><h3>Recent vaccines</h3><button class="btn ghost sm" onclick="App.goto('child',{id:'${child.id}'})">View all</button></div>
+            <div class="card-body">${recent.map(s=>`<div class="list-row"><div class="lr-main"><div class="lr-t">${esc(s.vaccineCode)}</div><div class="lr-s">Given ${fmtDate(s.administeredDate)}</div></div></div>`).join('') || '<p class="small muted">None yet.</p>'}</div>
+          </div>
+          <div class="card"><div class="card-head"><h3>My follow-ups</h3></div>
+            <div class="card-body">${cases.map(c=>`<div class="list-row" style="cursor:pointer" onclick="App.goto('case',{id:'${c.id}'})"><div class="lr-main"><div class="lr-t">${esc(caseTypeLabel(c.type))}</div><div class="lr-s">${fmtDate(c.createdAt.slice(0,10))}</div></div>${statusBadge(c.status)}</div>`).join('') || '<p class="small muted">No open follow-ups.</p>'}</div>
+          </div>
+        </div>`;
+    }
+    const cases = scopeCases(u);
+    const kids = scopeChildren(u);
+    const open = cases.filter(c=>!['resolved','unable_to_confirm'].includes(c.status));
+    const urgent = open.filter(c=>c.priority==='urgent');
+    const covered = kids.length ? Math.round(kids.reduce((a,c)=>a+(enrichChild(c).doneCount/Math.max(1,enrichChild(c).totalCount)),0)/kids.length*100) : 0;
+    return `
+      <div class="kpi-grid" style="margin-bottom:18px">
+        <div class="kpi teal"><div class="k-top"><div class="k-ic">${icon('baby')}</div></div><div class="k-val">${kids.length}</div><div class="k-lbl">Children</div></div>
+        <div class="kpi orange"><div class="k-top"><div class="k-ic">${icon('clipboardCheck')}</div></div><div class="k-val">${open.length}</div><div class="k-lbl">Open cases</div></div>
+        <div class="kpi red"><div class="k-top"><div class="k-ic">${icon('alert')}</div></div><div class="k-val">${urgent.length}</div><div class="k-lbl">Urgent</div></div>
+        <div class="kpi green"><div class="k-top"><div class="k-ic">${icon('shield')}</div></div><div class="k-val">${covered}%</div><div class="k-lbl">Coverage</div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Highest priority cases</h3><button class="btn ghost sm" onclick="App.goto('worklist')">Worklist</button></div>
+        <div class="card-body">
+          ${open.slice(0,5).map(c=>{const ec=enrichCase(c);return `<div class="list-row" style="cursor:pointer" onclick="App.goto('case',{id:'${c.id}'})"><div class="lr-main"><div class="lr-t">${esc(ec.childName)} — ${esc(c.type.replace(/_/g,' '))}</div><div class="lr-s">${esc(ec.community)} · ${esc(ec.assigneeName||'Unassigned')}</div></div>${priorityBadge(c.priority)}<span class="badge brand">${c.score}</span></div>`}).join('') || '<p class="small muted">All caught up.</p>'}
+        </div>
+      </div>`;
+  },
+
+  view_worklist(){
+    const open = scopeCases(this.state.user).filter(c=>!['resolved','unable_to_confirm'].includes(c.status)).sort((a,b)=>b.score-a.score);
+    return `<div class="context-banner cb-follow"><div class="cb-ic">${icon('target')}</div><div><h4>How follow-up scores work</h4><p>0–100 staff outreach ordering score = overdue schedule × 40% + repeated missed sessions × 25% + contact difficulty × 20% + access barriers × 15%. Priority bands: urgent 75–100, high 50–74, medium 25–49, low 0–24. Higher scores suggest earlier outreach; not a child's health score or diagnosis. Demo factors are fictional.</p></div></div>
+      ${open.map(c=>{
+        const f = c.factors||{};
+        const ec = enrichCase(c);
+        return `<div class="card card-pad" style="margin-bottom:12px">
+          <div class="between">
+            <div><div class="bold">${esc(ec.childName)} <span class="tiny muted">(${esc(ec.childUniqueId)})</span></div><div class="small muted">${esc(ec.community)} · ${esc(caseTypeLabel(c.type))} · ${esc(ec.assigneeName||'Unassigned')}</div></div>
+            <div style="text-align:right">${priorityBadge(c.priority)}<div style="font-size:1.4rem;font-weight:700">${c.score}</div></div>
+          </div>
+          <div class="disclaimer-box" style="margin-top:12px">
+            <strong>Why this score:</strong> Overdue ${f.overdue||0}×40% + Repeated missed ${f.repeatedMissed||0}×25% + Contact difficulty ${f.contactDifficulty||0}×20% + Access barriers ${f.accessBarrier||0}×15% = ${c.score} (rounded).
+          </div>
+          <div class="row" style="margin-top:10px;gap:8px"><button class="btn sm" onclick="App.goto('case',{id:'${c.id}'})">Open case</button></div>
+        </div>`;
+      }).join('') || '<div class="card card-pad"><p class="small muted">No open cases.</p></div>'}`;
+  },
+
+  view_cases(){
+    const user=this.state.user,cases=scopeCases(user).map(enrichCase);
+    if(user.role==='child') return `<div class="between" style="margin-bottom:16px"><div><h2>My Follow-ups</h2>
+      <p class="muted small">A follow-up is a record the health team uses when a vaccination visit may have been missed, a contact needs checking, or someone needs help. It is not a diagnosis.</p></div></div>
+      <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>What needs follow-up</th><th>Opened</th><th>Status</th><th></th></tr></thead>
+      <tbody>${cases.map(c=>`<tr><td><div class="t-strong">${esc(caseTypeLabel(c.type))}</div><div class="tiny muted">${esc(childCaseDescription(c.type))}</div></td>
+      <td>${fmtDate(c.createdAt.slice(0,10))}</td><td><span class="badge info">${esc(childCaseStatusLabel(c.status))}</span></td>
+      <td><button class="btn ghost sm" onclick="App.goto('case',{id:'${c.id}'})">View</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:24px">No follow-ups are listed right now.</td></tr>'}</tbody>
+      </table></div></div>`;
+    return `<div class="between" style="margin-bottom:16px"><div><h2>Cases</h2><p class="muted small">Staff follow-up records. Scores help order outreach and never describe a child's health.</p></div></div>
+      <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>Child</th><th>Follow-up</th><th>Status</th><th>Priority</th><th>Score ⓘ</th><th>Assigned</th><th></th></tr></thead>
+      <tbody>${cases.map(c=>`<tr><td><div class="t-strong">${esc(c.childName)}</div><div class="tiny muted">${esc(c.childUniqueId)}</div></td>
+      <td>${esc(caseTypeLabel(c.type))}</td><td>${statusBadge(c.status)}</td><td>${priorityBadge(c.priority)}</td>
+      <td><span class="badge brand" title="0–100 outreach ordering score, not a health score.">${c.score}</span></td><td>${esc(c.assigneeName||'—')}</td>
+      <td><button class="btn ghost sm" onclick="App.goto('case',{id:'${c.id}'})">Open</button></td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px">No cases.</td></tr>'}</tbody>
+      </table></div></div>`;
+  },
+
+  view_case(){
+    const id=this.state.params.id,c=DB.cases.find(x=>x.id===id);
+    if(!c)return `<div class="card card-pad">Follow-up not found.</div>`;
+    const u=this.state.user,childView=u.role==='child';
+    if(childView&&!scopeChildren(u).some(ch=>ch.id===c.childId))return `<div class="card card-pad">Access denied.</div>`;
+    const ec=enrichCase(c),isWorker=u.role==='admin'||u.role==='worker';
+    const transitions={new:['needs_verification','unable_to_confirm'],needs_verification:['assigned','unable_to_confirm'],assigned:['awaiting_response','resolved','unable_to_confirm'],awaiting_response:['resolved','assigned','unable_to_confirm'],unable_to_confirm:['assigned'],resolved:[]}[c.status]||[];
+    const history=DB.history.filter(h=>h.caseId===c.id).reverse(),notes=DB.notes.filter(n=>n.caseId===c.id).reverse();
+    if(childView)return `<button class="btn ghost sm" onclick="App.goto('cases')" style="margin-bottom:14px">${icon('arrowLeft')} Back to follow-ups</button>
+      <div class="card card-pad"><div class="between"><div><h2>${esc(caseTypeLabel(c.type))}</h2><p class="muted small">Opened ${fmtDate(c.createdAt.slice(0,10))}</p></div>
+      <span class="badge info">${esc(childCaseStatusLabel(c.status))}</span></div><div class="divider"></div><h3>What this means</h3>
+      <p class="small">${esc(childCaseDescription(c.type))}</p><div class="disclaimer-box" style="margin-top:14px">If this looks wrong, ask your trusted adult to contact the health team.</div>
+      <button class="btn" style="margin-top:12px" onclick="App.goto('support')">Support & Contact</button></div>`;
+    return `<button class="btn ghost sm" onclick="App.goto('cases')" style="margin-bottom:14px">${icon('arrowLeft')} Back</button>
+      <div class="card card-pad" style="margin-bottom:16px"><div class="between"><div><h2>${esc(caseTypeLabel(c.type))}</h2>
+      <p class="muted small">${esc(ec.childName)} · ${esc(ec.childUniqueId)} · ${esc(ec.community)}</p>
+      <div class="row" style="margin-top:8px;gap:6px">${statusBadge(c.status)} ${priorityBadge(c.priority)}</div></div>
+      <div style="text-align:right"><div style="font-size:2rem;font-weight:700">${c.score}</div><div class="tiny muted">follow-up score</div></div></div>
+      <div class="disclaimer-box" style="margin-top:14px">This 0–100 score orders staff outreach only, not a child's health or diagnosis. Formula: overdue schedule × 40% + repeated missed sessions × 25% + contact difficulty × 20% + access barriers × 15%.</div>
+      ${isWorker?`<div class="divider"></div><div class="row" style="gap:8px;flex-wrap:wrap">
+      ${c.assignedTo===u.id?'<span class="badge brand">Assigned to you</span>':`<button class="btn sm" onclick="App.doAssignSelf('${c.id}')">Assign to me</button>`}
+      ${transitions.map(t=>`<button class="btn ghost sm" onclick="App.doTransition('${c.id}','${t}')">Mark ${t.replace(/_/g,' ')}</button>`).join('')}</div>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn ghost sm" onclick="App.openContactModal('${c.id}')">Log contact</button>
+      <button class="btn ghost sm" onclick="App.openReasonModal('${c.id}')">Reason</button><button class="btn ghost sm" onclick="App.openNoteModal('${c.id}')">Add note</button>
+      <button class="btn" onclick="App.openVisitModal('${c.id}')">Record visit</button></div>`:''}</div>
+      <div class="cols-2"><div class="card"><div class="card-head"><h3>History</h3></div><div class="card-body"><div class="timeline">
+      ${history.map(h=>`<div class="tl-item done"><div class="tl-t">${esc(h.action)}</div><div class="tl-s">${esc(h.actorName)} · ${fmtDT(h.at)}</div></div>`).join('')||'<p class="small muted">No history yet.</p>'}</div></div></div>
+      <div>${notes.length?`<div class="card"><div class="card-head"><h3>Notes</h3></div><div class="card-body">
+      ${notes.map(n=>`<div class="list-row"><div class="lr-main"><div class="lr-s">${fmtDT(n.at)} · ${esc(n.authorName)}</div><div>${esc(n.text)}</div></div></div>`).join('')}</div></div>`:''}</div></div>`;
+  },
+
+  view_children(){
+    const user=this.state.user;
+    if(user.role==='child'){
+      const child=childRecordFor(user);
+      if(!child)return `<div class="card card-pad">No vaccination record is linked to this account.</div>`;
+      const schedule=DB.schedules.filter(d=>d.childId===child.id).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+      return `<div class="between" style="margin-bottom:16px"><div><h2>My Vaccinations</h2><p class="muted small">This account shows one child's record. A trusted adult can help contact the health team if anything looks wrong.</p></div></div>
+        <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>Vaccine</th><th>Due date</th><th>Status</th></tr></thead>
+        <tbody>${schedule.map(d=>`<tr><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.dueDate)}</td><td>${statusBadge(d.status)}</td></tr>`).join('')||'<tr><td colspan="3">No schedule is listed.</td></tr>'}</tbody></table></div></div>
+        <div class="disclaimer-box" style="margin-top:14px">Demo schedule only. Dates are not clinically verified. Confirm timing with an authorised health professional.</div>`;
+    }
+    const kids=scopeChildren(user).map(enrichChild);
+    return `<div class="between" style="margin-bottom:16px"><h2>Children</h2></div><div class="card"><div class="table-wrap"><table class="tbl">
+      <thead><tr><th>Name</th><th>VaxReach ID</th><th>Age</th><th>Community</th><th>Status</th><th></th></tr></thead>
+      <tbody>${kids.map(c=>`<tr><td><div class="t-strong">${esc(c.name)}</div><div class="tiny muted">${c.doneCount}/${c.totalCount} doses</div></td>
+      <td><span class="badge gray" style="font-family:monospace">${esc(c.uniqueId)}</span></td><td>${esc(c.ageText)}</td><td>${esc(c.community)}</td><td>${statusBadge(c.status)}</td>
+      <td><button class="btn ghost sm" onclick="App.goto('child',{id:'${c.id}'})">Open</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  },
+
+  view_child(){
+    const id = this.state.params.id;
+    const c = DB.children.find(x=>x.id===id);
+    if(!c) return `<div class="card card-pad">Not found.</div>`;
+    if(!canAccessChild(this.state.user, c)) return `<div class="card card-pad">Access denied.</div>`;
+    const ec = enrichChild(c);
+    const u = this.state.user;
+    const isWorker = u.role==='admin' || u.role==='worker';
+    const sch = DB.schedules.filter(s=>s.childId===id).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+    return `
+      <button class="btn ghost sm" onclick="App.goto('${u.role==='child'?'dashboard':'children'}')" style="margin-bottom:14px">${icon('arrowLeft')} Back</button>
+      <div class="context-banner cb-warn"><div class="cb-ic">${icon('alert')}</div><div><h4>Demo schedule</h4><p>${esc(DB.config.source)} — NOT clinically verified. Verify with an authorised health professional.</p></div></div>
+      <div class="card card-pad" style="margin-bottom:16px">
+        <div class="between">
+          <div><h2>${esc(c.name)}</h2><p class="muted small">${esc(c.sex)} · ${esc(ec.ageText)} · DOB ${fmtDate(c.dob)}</p></div>
+          <div><span class="badge brand" style="font-family:monospace">${esc(c.uniqueId)}</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="kv">
+          <div class="kv-i"><div class="k">Community</div><div class="v">${esc(c.community)}</div></div>
+          <div class="kv-i"><div class="k">District</div><div class="v">${esc(c.district)}</div></div>
+          <div class="kv-i"><div class="k">Doses</div><div class="v">${ec.doneCount} of ${ec.totalCount}</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Schedule</h3><span class="badge warn">Unverified demo</span></div>
+        <div class="card-body"><div class="timeline">
+          ${sch.map(s=>{
+            const st = s.administeredDate ? 'completed' : (s.dueDate < todayISO() ? 'overdue' : 'due');
+            return `<div class="tl-item ${st==='completed'?'done':st}">
+              <div class="between">
+                <div><div class="tl-t">${esc(s.vaccineCode)}</div><div class="tl-s">${s.administeredDate ? 'Given '+fmtDate(s.administeredDate) : 'Due '+fmtDate(s.dueDate)+' · '+relDue(s.dueDate)}</div></div>
+                <div>${statusBadge(st)}${isWorker && !s.administeredDate ? `<button class="btn sm" onclick="App.openAdministerModal('${s.id}','${id}','${esc(s.vaccineCode)}')">Record</button>` : ''}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div></div>
+      </div>`;
+  },
+
+  view_households(){
+    const kids = scopeChildren(this.state.user);
+    const hhIds = new Set(kids.map(c=>c.householdId));
+    const rows = DB.households.filter(h=>hhIds.has(h.id)).map(h=>{
+      const open = DB.cases.filter(c=>c.householdId===h.id && !['resolved','unable_to_confirm'].includes(c.status));
+      const top = open.length ? Math.max(...open.map(c=>c.score)) : 0;
+      const priority = open.some(c=>c.priority==='urgent') ? 'urgent' : top>=50?'high':top>=25?'medium':'low';
+      return {...h, openCases:open.length, priority};
+    });
+    return `<div class="between" style="margin-bottom:16px"><h2>Households</h2></div>
+      <div class="card"><div class="table-wrap"><table class="tbl">
+        <thead><tr><th>Head</th><th>Community</th><th>District</th><th>Open cases</th><th>Priority</th></tr></thead>
+        <tbody>${rows.map(h=>`<tr>
+          <td><div class="t-strong">${esc(h.head)}</div><div class="tiny muted">${esc(h.address||'')}</div></td>
+          <td>${esc(h.community)}</td>
+          <td>${esc(h.district)}</td>
+          <td>${h.openCases}</td>
+          <td>${priorityBadge(h.priority)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div></div>`;
+  },
+
+  view_map(){
+    return `
+      <div class="context-banner cb-geo"><div class="cb-ic">${icon('map')}</div><div><h4>GeoReach</h4><p>Households you can access. Demo coordinates only.</p></div></div>
+      <div class="card" style="margin-bottom:16px">
+        <div id="leaflet-map"></div>
+        <div class="map-legend">
+          <span class="lg-item"><i style="background:#dc2626"></i>Urgent</span>
+          <span class="lg-item"><i style="background:#ea580c"></i>High</span>
+          <span class="lg-item"><i style="background:#059669"></i>No open case</span>
+        </div>
+      </div>`;
+  },
+
+  view_camps(){
+    return `<div class="between" style="margin-bottom:16px"><h2>Outreach Camps</h2></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+        ${DB.camps.map(c=>`<div class="card card-pad">
+          <div class="between"><h4>${esc(c.title)}</h4><span class="badge ${c.status==='active'?'ok':'info'}">${esc(c.status)}</span></div>
+          <div class="small muted" style="margin:10px 0">${esc(c.community)} · ${esc(c.district)}</div>
+          <div class="small muted">${fmtDate(c.startDate)} → ${fmtDate(c.endDate)}</div>
+          <div class="small muted" style="margin-top:8px">${esc(c.services||'')}</div>
+        </div>`).join('')}
+      </div>`;
+  },
+
+  view_support(){
+    const u = this.state.user;
+    const requests = u.role==='child'
+      ? DB.requests.filter(r=>scopeChildren(u).some(c=>c.id===r.childId))
+      : DB.requests;
+    if(u.role==='child'){
+      const kids = scopeChildren(u);
+      return `<div class="support-layout">
+        <div class="card"><div class="card-head"><h3>Raise a concern</h3></div>
+          <div class="card-body"><form onsubmit="App.submitRequest(event)">
+            <label class="field"><span>Child</span><select name="childId">${kids.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>
+            <label class="field"><span>Category</span><select name="category">
+              <option>Side Effects</option><option>Missed Vaccination</option><option>Record Correction</option><option>General Query</option>
+            </select></label>
+            <label class="field"><span>Subcategory</span><input type="text" name="sub" placeholder="e.g. Mild Fever" /></label>
+            <label class="field"><span>Organisation</span><select name="org">
+              <option>Salia Sahi UHC</option><option>Bidanasi UHC</option><option>Puri District Hospital</option>
+            </select></label>
+            <label class="field"><span>Details</span><textarea name="details" rows="3" required></textarea></label>
+            <button class="btn block" type="submit">Submit</button>
+          </form></div>
+        </div>
+        <div class="card"><div class="card-head"><h3>My concerns</h3></div>
+          <div class="card-body">${requests.map(r=>`<div class="concern-card ${r.status==='resolved'?'resolved':''}">
+            <div class="concern-header"><div class="concern-title">${esc(r.category)} · ${esc(r.sub||'')}</div><span class="badge ${r.status==='open'?'warn':'ok'}">${esc(r.status)}</span></div>
+            <div class="concern-meta">To ${esc(r.org)} · ${fmtDT(r.createdAt)}</div>
+            <div class="concern-body">${esc(r.details)}</div>
+            ${r.replies.map(rep=>`<div class="reply-box"><strong>${esc(rep.by)}:</strong> ${esc(rep.text)}</div>`).join('')}
+          </div>`).join('') || '<p class="small muted">None yet.</p>'}</div>
+        </div>
+      </div>`;
+    }
+    return `<div class="card"><div class="card-head"><h3>Support inbox</h3></div>
+      <div class="card-body">${requests.map(r=>{
+        const child = DB.children.find(c=>c.id===r.childId);
+        return `<div class="concern-card ${r.status==='resolved'?'resolved':''}">
+          <div class="concern-header"><div class="concern-title">${esc(child?child.name:'—')} · ${esc(r.category)}</div><span class="badge ${r.status==='open'?'warn':'ok'}">${esc(r.status)}</span></div>
+          <div class="concern-meta">${esc(r.sub||'')} · ${fmtDT(r.createdAt)}</div>
+          <div class="concern-body">${esc(r.details)}</div>
+          ${r.replies.map(rep=>`<div class="reply-box"><strong>${esc(rep.by)}:</strong> ${esc(rep.text)}</div>`).join('')}
+          ${r.status==='open'?`<form onsubmit="App.replyRequest(event,'${r.id}')" style="margin-top:8px">
+            <label class="field"><span>Reply</span><textarea name="text" rows="2" required></textarea></label>
+            <button class="btn sm" type="submit">Send & resolve</button>
+          </form>`:''}
+        </div>`;
+      }).join('') || '<p class="small muted">No concerns in your inbox.</p>'}</div>
+    </div>`;
+  },
+
+  view_messages(){
+    return `<div class="card"><div class="card-head"><h3>Simulated SMS & IVR</h3></div>
+      <div class="card-body">
+        <div class="context-banner cb-warn"><div class="cb-ic">${icon('alert')}</div><div><h4>Simulated — no real SMS sent</h4><p>This single-file demo stores messages locally. Real delivery requires a provider account and DLT registration.</p></div></div>
+        ${DB.messages.map(m=>{
+          const c = DB.children.find(ch=>ch.id===m.childId);
+          return `<div class="list-row">
+            <div class="lr-main"><div class="lr-t">${esc(c?c.name:'—')} · ${esc(m.channel)}</div><div class="lr-s">${fmtDT(m.sentAt)} · ${esc(m.status)}</div><div style="margin-top:4px;font-size:.85rem">${esc(m.body)}</div></div>
+          </div>`;
+        }).join('') || '<p class="small muted">None yet.</p>'}
+      </div>
+    </div>`;
+  },
+
+  view_reports(){
+    const f = this.state.reportFilters;
+    const cases = scopeCases(this.state.user).filter(c=>{
+      const d = c.createdAt.slice(0,10);
+      return d>=f.from && d<=f.to;
+    });
+    const assigned = cases.filter(c=>c.assignedTo).length;
+    const resolved = cases.filter(c=>c.status==='resolved').length;
+    const unresolved = cases.filter(c=>!['resolved','unable_to_confirm'].includes(c.status)).length;
+    const reasonCount = {};
+    cases.forEach(c=>{ if(c.reason){ const r = DB.reasons.find(x=>x.id===c.reason); const l = r?r.label:c.reason; reasonCount[l]=(reasonCount[l]||0)+1; } });
+    const maxReason = Math.max(1, ...Object.values(reasonCount));
+    return `
+      <div class="between" style="margin-bottom:16px"><h2>Reports</h2><button class="btn sm" onclick="App.exportCSV()">${icon('download')} Export CSV</button></div>
+      <div class="card" style="margin-bottom:16px"><div class="card-body">
+        <div class="row" style="gap:10px;flex-wrap:wrap">
+          <label class="field" style="margin:0"><span>From</span><input type="date" value="${f.from}" onchange="App.setReportFilter('from', this.value)" /></label>
+          <label class="field" style="margin:0"><span>To</span><input type="date" value="${f.to}" onchange="App.setReportFilter('to', this.value)" /></label>
+        </div>
+      </div></div>
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi teal"><div class="k-top"><div class="k-ic">${icon('clipboardCheck')}</div></div><div class="k-val">${assigned}</div><div class="k-lbl">Assigned</div></div>
+        <div class="kpi green"><div class="k-top"><div class="k-ic">${icon('check')}</div></div><div class="k-val">${resolved}</div><div class="k-lbl">Resolved</div></div>
+        <div class="kpi red"><div class="k-top"><div class="k-ic">${icon('alert')}</div></div><div class="k-val">${unresolved}</div><div class="k-lbl">Unresolved</div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>Unresolved by reason</h3></div>
+        <div class="card-body">
+          ${Object.entries(reasonCount).map(([label,value])=>`<div class="bar-row"><div class="small bold">${esc(label)}</div><div class="bar-track"><div class="bar-fill warn" style="width:${(value/maxReason*100)}%"></div></div><div class="bar-val">${value}</div></div>`).join('') || '<p class="small muted">No reasons recorded.</p>'}
+        </div>
+      </div>`;
+  },
+
+  view_users(){
+    if(this.state.user.role!=='admin') return '<div class="card card-pad">Access denied.</div>';
+    return `<div class="between" style="margin-bottom:16px"><h2>Users</h2></div>
+      <div class="card"><div class="table-wrap"><table class="tbl">
+        <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Active</th><th></th></tr></thead>
+        <tbody>${DB.users.map(u=>`<tr>
+          <td>${esc(u.name)}</td>
+          <td><span class="badge ${u.role==='admin'?'danger':u.role==='worker'?'info':'violet'}">${esc(u.role)}</span></td>
+          <td class="small muted">${esc(u.email)}</td>
+          <td>${u.active?'<span class="badge ok">Active</span>':'<span class="badge gray">Disabled</span>'}</td>
+          <td><button class="btn ghost sm" onclick="App.toggleUser('${u.id}',${!u.active})">${u.active?'Disable':'Enable'}</button></td>
+        </tr>`).join('')}</tbody>
+      </table></div></div>`;
+  },
+
+  view_audit(){
+    if(this.state.user.role!=='admin') return '<div class="card card-pad">Access denied.</div>';
+    const events = DB.audit.slice(0,100);
+    return `<div class="between" style="margin-bottom:16px"><h2>Audit trail</h2></div>
+      <div class="card"><div class="table-wrap"><table class="tbl">
+        <thead><tr><th>When</th><th>Actor</th><th>Action</th></tr></thead>
+        <tbody>${events.map(e=>`<tr>
+          <td class="small nowrap">${fmtDT(e.at)}</td>
+          <td>${esc(e.actorName)}</td>
+          <td>${esc(e.action)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div></div>`;
+  },
+
+  view_schedule(){
+    if(this.state.user.role!=='admin') return '<div class="card card-pad">Access denied.</div>';
+    return `<div class="between" style="margin-bottom:16px"><h2>Schedule configuration</h2></div>
+      <div class="card card-pad" style="max-width:600px">
+        <form onsubmit="App.saveConfig(event)">
+          <label class="field"><span>Source</span><input type="text" name="source" value="${esc(DB.config.source)}" required /></label>
+          <label class="field" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="approved" ${DB.config.approved?'checked':''} style="width:auto;margin:0" /><span style="margin:0">Approved by authorised medical authority</span></label>
+          <button class="btn" type="submit">Save</button>
+        </form>
+        <div class="disclaimer-box"><strong>Important.</strong> The seeded schedule is demo data only. Replace with an MoHFW or state-approved schedule before any real use.</div>
+      </div>`;
+  },
+
+  saveConfig(event){
+    event.preventDefault();
+    DB.config.source = event.target.source.value;
+    DB.config.approved = event.target.approved.checked;
+    save();
+    toast('Saved');
+    this.render();
+  },
+
+  view_integrations(){
+    const provider = 'NOT CONFIGURED (simulated only)';
+    return `<div class="between" style="margin-bottom:16px"><h2>Integrations</h2></div>
+      <div class="card card-pad" style="margin-bottom:12px"><div class="between"><h3>U-WIN</h3><span class="badge warn">MOCK</span></div>
+        <p class="small muted" style="margin-top:8px">Not a real U-WIN connection. Requires MoHFW-approved API access and a data-sharing agreement.</p>
+      </div>
+      <div class="card card-pad" style="margin-bottom:12px"><div class="between"><h3>SMS Provider</h3><span class="badge gray">${provider}</span></div>
+        <p class="small muted" style="margin-top:8px">Simulated. Real SMS requires Twilio/Africa's Talking + DLT registration in India.</p>
+      </div>
+      <div class="card card-pad"><div class="between"><h3>IVR Provider</h3><span class="badge gray">${provider}</span></div>
+        <p class="small muted" style="margin-top:8px">Simulated. Real IVR requires a telephony provider.</p>
+      </div>`;
+  },
+
+  view_capabilities(){
+    const caps = [
+      ['Browser persistence (localStorage)','LIVE','Data survives refresh and closes on this browser.'],
+      ['Demo sign-in','DEMO','Simple hash comparison. NOT secure — production needs server bcrypt.'],
+      ['Role-based views','DEMO','Enforced in browser. Bypassable via DevTools. Production needs server RBAC.'],
+      ['Case workflow','LIVE','Assign, transition, reason, contact, visit, resolve. All work.'],
+      ['Audit trail','LIVE','Local append-only log.'],
+      ['Reports + CSV','LIVE','Real aggregate reports from local data.'],
+      ['Geographic map','DEMO','Requires internet for tile server. Falls back to list.'],
+      ['Family assistant','DEMO','Browser speech APIs. Text fallback always works.'],
+      ['SMS delivery','SIMULATED','Messages stored locally. No real SMS sent.'],
+      ['IVR calls','SIMULATED','Not implemented. UI stub only.'],
+      ['U-WIN integration','MOCK','Sandbox only. Real needs MoHFW approval.'],
+      ['Approved schedule','NEEDS APPROVAL','Current schedule is unverified demo data.']
+    ];
+    return `<div class="between" style="margin-bottom:16px"><h2>Capability matrix</h2></div>
+      <div class="card card-pad">
+        ${caps.map(([name,level,note])=>`
+          <div class="cap-row">
+            <div class="cap-name">${esc(name)}</div>
+            <div><span class="badge ${level==='LIVE'?'tag-live':level==='DEMO'?'tag-demo':level==='MOCK'?'tag-mock':'tag-needs'}">${esc(level)}</span></div>
+            <div class="cap-note">${esc(note)}</div>
+          </div>`).join('')}
+      </div>
+      <div class="card card-pad" style="margin-top:16px">
+        <h3 style="margin-bottom:12px">What's needed for production</h3>
+        <ul class="small" style="line-height:1.8;margin:0;padding-left:20px">
+          <li>Real backend (Node.js + SQLite or Postgres) for persistent multi-user data</li>
+          <li>Server-side authentication with bcrypt/argon2 and HttpOnly cookies</li>
+          <li>Server-enforced RBAC on every endpoint</li>
+          <li>U-WIN API credentials from MoHFW with signed agreement</li>
+          <li>DLT-registered SMS sender (TRAI) and telephony provider</li>
+          <li>Approved immunisation schedule from state health authority</li>
+          <li>HTTPS + CSP + rate limiting + CSRF tokens</li>
+        </ul>
+      </div>`;
+  },
+
+  view_settings(){
+    if(this.state.user.role!=='admin') return '<div class="card card-pad">Access denied.</div>';
+    return `<div class="between" style="margin-bottom:16px"><h2>Settings & data</h2></div>
+      <div class="card card-pad" style="max-width:600px">
+        <h3 style="margin-bottom:12px">Local data</h3>
+        <p class="small muted" style="margin-bottom:12px">All data lives in this browser's localStorage. Clearing browser data will erase it.</p>
+        <div class="kv" style="margin-bottom:16px">
+          <div class="kv-i"><div class="k">Children</div><div class="v">${DB.children.length}</div></div>
+          <div class="kv-i"><div class="k">Cases</div><div class="v">${DB.cases.length}</div></div>
+          <div class="kv-i"><div class="k">Users</div><div class="v">${DB.users.length}</div></div>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button class="btn" onclick="App.exportJSON()">${icon('download')} Export JSON</button>
+          <button class="btn danger" onclick="App.resetAll()">Reset to seed</button>
+        </div>
+        <div class="disclaimer-box" style="margin-top:16px"><strong>Demo only.</strong> Do not enter real patient information. This is a browser prototype, not a production health system.</div>
+      </div>`;
+  },
+
+  view_voice(){
+    const lang = this.state.voiceLang;
+    return `<div class="context-banner cb-voice"><div class="cb-ic">${icon('mic')}</div><div><h4>Help Assistant</h4><p>Looks up this child's demo schedule and camp list, or opens support. Uses simple keyword matching; speech input and playback depend on browser support. Not medical advice.</p></div></div>
+      <div class="voice-shell">
+        <div class="card"><div class="card-head"><h3>Voice</h3></div>
+          <div class="card-body">
+            <div class="voice-lang">
+              <button class="${lang==='en'?'active':''}" onclick="App.setVoiceLang('en')">English</button>
+              <button class="${lang==='hi'?'active':''}" onclick="App.setVoiceLang('hi')">हिन्दी</button>
+              <button class="${lang==='or'?'active':''}" onclick="App.setVoiceLang('or')">ଓଡ଼ିଆ</button>
+            </div>
+            <button class="voice-mic-btn" onclick="App.toggleMic()">${icon('mic')}</button>
+            <div class="voice-transcript" style="margin-top:12px">${esc(this.state.voiceTranscript||'(nothing recognised)')}</div>
+            <div class="voice-response">${esc(this.state.voiceResponse||'Ask about your next vaccination, a nearby camp, or getting help.')}</div>
+            ${this.state.voiceAction==='support'?'<button class="btn sm" style="margin-top:10px" onclick="App.goto(\'support\')">Open Support & Contact</button>':''}
+            <button class="btn ghost sm" style="margin-top:12px" onclick="App.clearVoice()">Clear</button>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Text input</h3></div>
+          <div class="card-body">
+            <form onsubmit="App.askVoice(event)">
+              <label class="field"><span>Question</span><textarea name="q" rows="3"></textarea></label>
+              <button class="btn" type="submit">Ask</button>
+            </form>
+            <div class="divider"></div>
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <button class="btn ghost sm" onclick="App.askSuggestion('When is my next vaccination?')">Next vaccination</button>
+              <button class="btn ghost sm" onclick="App.askSuggestion('Where is the nearest camp?')">Nearby camp</button>
+              <button class="btn ghost sm" onclick="App.askSuggestion('I missed a session and need help')">Get help</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  },
+
+  view_profile(){
+    const u = this.state.user;
+    return `<div class="between" style="margin-bottom:16px"><h2>My profile</h2></div>
+      <div class="card card-pad" style="max-width:600px">
+        <form onsubmit="App.saveProfile(event)">
+          <label class="field"><span>Name</span><input type="text" name="name" value="${esc(u.name)}" required /></label>
+          <label class="field"><span>Phone</span><input type="tel" name="phone" value="${esc(u.phone||'')}" /></label>
+          ${u.role!=='child'?`<label class="field"><span>Facility</span><input type="text" name="facility" value="${esc(u.facility||'')}" /></label>`:''}
+          <label class="field"><span>Email (read-only)</span><input type="email" value="${esc(u.email)}" disabled /></label>
+          <button class="btn" type="submit">Save</button>
+        </form>
+        <div class="divider"></div>
+        <button class="btn ghost" onclick="App.doLogout()">Sign out</button>
+      </div>`;
+  }
+};
+
+/* ============ NAV ============ */
+const NAV = {
+  admin:[
+    ['dashboard','Dashboard','grid'],['worklist','Worklist','target'],['cases','Cases','clipboardCheck'],
+    ['children','Children','baby'],['households','Households','home'],['map','GeoReach','map'],
+    ['camps','Camps','layers'],['reports','Reports','chart'],['audit','Audit','eye'],
+    ['users','Users','users'],['schedule','Schedule','syringe'],['integrations','Integrations','info'],
+    ['capabilities','Capabilities','info'],['settings','Settings','settings'],['profile','Profile','person']
+  ],
+  worker:[
+    ['dashboard','Dashboard','grid'],['worklist','Worklist','target'],['cases','Cases','clipboardCheck'],
+    ['children','Children','baby'],['households','Households','home'],['map','GeoReach','map'],
+    ['camps','Camps','layers'],['support','Support inbox','messageCircle'],['messages','Messages','send'],
+    ['voice','Voice','mic'],['capabilities','Capabilities','info'],['profile','Profile','person']
+  ],
+  child:[
+    ['dashboard','Dashboard','grid'],['children','My Vaccinations','syringe'],
+    ['cases','My Follow-ups','clipboardCheck'],['support','Support & Contact','messageCircle'],
+    ['camps','Nearby Camps','layers'],['voice','Help Assistant','mic'],['profile','Profile','person']
+  ]
+};
+
+/* ============ BOOT ============ */
+App.init();
+</script>
+</body>
+</html>
