@@ -1,0 +1,13 @@
+{
+  "name": "VaxReach Immunisation Follow-up",
+  "short_name": "VaxReach",
+  "description": "Offline-capable vaccination follow-up for health workers and families.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d9488",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

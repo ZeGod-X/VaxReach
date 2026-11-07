@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0d9488" />
+<link rel="manifest" href="/manifest.webmanifest" />
 <title>VaxReach — Immunisation Follow-up</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d9488'/%3E%3Cpath d='M16 8v16M10 13h12' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -344,6 +345,7 @@ table.tbl tbody tr:hover{background:var(--surface-soft)}
 <div id="modal-root"></div>
 <div id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="/vaxreach-runtime.js"></script>
 <script>
 "use strict";
 
@@ -417,7 +419,7 @@ function priorityBadge(p){
   return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
 }
 function statusBadge(s){
-  const m={new:['info','New'],needs_verification:['violet','Needs Verification'],assigned:['brand','Assigned'],awaiting_response:['warn','Awaiting Response'],resolved:['ok','Resolved'],unable_to_confirm:['gray','Unable to Confirm'],completed:['ok','Completed'],overdue:['danger','Overdue'],due:['warn','Due soon'],upcoming:['gray','Upcoming'],offline_draft:['warn','Saved offline'],pending_review:['info','Waiting for admin'],approved:['ok','Verified'],rejected:['danger','Changes requested']};
+  const m={new:['info','New'],needs_verification:['violet','Needs Verification'],assigned:['brand','Assigned'],awaiting_response:['warn','Awaiting Response'],resolved:['ok','Resolved'],unable_to_confirm:['gray','Unable to Confirm'],completed:['ok','Completed'],overdue:['danger','Overdue'],due:['warn','Due soon'],upcoming:['gray','Upcoming'],offline_draft:['warn','Saved offline'],pending_sync:['warn','Waiting to sync'],pending_review:['info','Waiting for admin'],approved:['ok','Verified'],rejected:['danger','Changes requested']};
   const [c,l]=m[s]||['gray',s];
   return `<span class="badge ${c}"><span class="dot"></span>${l}</span>`;
 }
@@ -469,7 +471,7 @@ function migrateChildAccounts(db){
     let u=db.users.find(x=>x.role==='child'&&x.id===c.accountId);
     if(!u) u=db.users.find(x=>x.role==='child'&&!used.has(x.id)&&String(x.name||'').toLowerCase()===String(c.name||'').toLowerCase());
     if(!u&&c.guardianId){const old=db.users.find(x=>x.id===c.guardianId&&x.role==='child'&&!used.has(x.id));if(old)u=old;}
-    if(!u){let id='u_'+c.id+'_account';while(db.users.some(x=>x.id===id))id+='_new';u={id,name:c.name,email:childLoginEmail(c.id),password:hashPw('child123'),role:'child',phone:c.phone||'',active:true,createdAt:new Date().toISOString()};db.users.push(u);}
+    if(!u){let id='u_'+c.id+'_account';while(db.users.some(x=>x.id===id))id+='_new';u={id,name:c.name,email:childLoginEmail(c.id),role:'child',phone:c.phone||'',active:true,createdAt:new Date().toISOString()};db.users.push(u);}
     u.name=c.name;u.email=u.email||childLoginEmail(c.id);c.accountId=u.id;delete c.guardianId;used.add(u.id);
   });
 }
@@ -497,13 +499,13 @@ function seed(){
   const db = { users:[], households:[], children:[], schedules:[], vaccineDrafts:[], cases:[], history:[], notes:[], visits:[], camps:[], reasons:[], requests:[], messages:[], audit:[], consents:[], config:{approved:false,source:'Demo seeded placeholder — NOT clinically verified'} };
 
   const users = [
-    ['u_admin','Dr. Anjali Patnaik','admin@vaxreach.demo','admin123','admin','+91 674 555 0101','Odisha HFW (DEMO)'],
-    ['u_worker1','Priyanka Das','worker@vaxreach.demo','worker123','worker','+91 674 555 0102','Salia Sahi UHC (DEMO)'],
-    ['u_worker2','Suresh Behera','worker2@vaxreach.demo','worker123','worker','+91 674 555 0103','Bidanasi UHC (DEMO)'],
-    ['u_worker3','Kabita Nayak','worker3@vaxreach.demo','worker123','worker','+91 674 555 0113','Puri District Hospital (DEMO)'],
+    ['u_admin','Dr. Anjali Patnaik','admin@vaxreach.demo','admin','+91 674 555 0101','Odisha HFW (DEMO)'],
+    ['u_worker1','Priyanka Das','worker@vaxreach.demo','worker','+91 674 555 0102','Salia Sahi UHC (DEMO)'],
+    ['u_worker2','Suresh Behera','worker2@vaxreach.demo','worker','+91 674 555 0103','Bidanasi UHC (DEMO)'],
+    ['u_worker3','Kabita Nayak','worker3@vaxreach.demo','worker','+91 674 555 0113','Puri District Hospital (DEMO)'],
   ];
-  users.forEach(([id,name,email,pw,role,phone,fac])=>{
-    db.users.push({id,name,email,password:hashPw(pw),role,phone,facility:fac,active:true,createdAt:now});
+  users.forEach(([id,name,email,role,phone,fac])=>{
+    db.users.push({id,name,email,role,phone,facility:fac,active:true,createdAt:now});
   });
 
   const hhs = [
@@ -538,7 +540,7 @@ function seed(){
   kids.forEach(([id,name,ageDays,sex,accountId,hhId,workerId],idx)=>{
     const hh = hhs.find(h=>h[0]===hhId);
     const dob = addDays(today, -ageDays);
-    db.users.push({id:accountId,name,email:childLoginEmail(id),password:hashPw('child123'),role:'child',phone:hh[2],facility:'',active:true,createdAt:now});
+    db.users.push({id:accountId,name,email:childLoginEmail(id),role:'child',phone:hh[2],facility:'',active:true,createdAt:now});
     db.children.push({id,uniqueId:genChildId(),name,dob,sex,accountId,householdId:hhId,
       guardianName:hh[1],phone:hh[2],community:hh[3],district:hh[4],assignedWorkerId:workerId,createdAt:now});
     VACCINES.forEach(v=>{
@@ -603,21 +605,31 @@ function seed(){
 /* ============ DB ============ */
 let DB = Store.load();
 if(!DB) { DB = seed(); Store.save(DB); }
-else { migrateChildAccounts(DB); migrateCaseScores(DB); if(!Array.isArray(DB.vaccineDrafts)) DB.vaccineDrafts=[]; Store.save(DB); }
+else { migrateChildAccounts(DB); migrateCaseScores(DB); if(!Array.isArray(DB.vaccineDrafts)) DB.vaccineDrafts=[]; (DB.users||[]).forEach(u=>delete u.password); Store.save(DB); }
 
 function save(){ return Store.save(DB); }
-function queueOfflineVaccinationDrafts(){
-  if(!navigator.onLine||!Array.isArray(DB.vaccineDrafts)) return 0;
-  const now=new Date().toISOString();
-  const queued=DB.vaccineDrafts.filter(d=>d.status==='offline_draft');
-  if(!queued.length) return 0;
-  const previous=queued.map(d=>({draft:d,status:d.status,syncedAt:d.syncedAt,updatedAt:d.updatedAt}));
-  queued.forEach(d=>{d.status='pending_review';d.syncedAt=now;d.updatedAt=now;});
-  if(!save()){
-    previous.forEach(p=>{p.draft.status=p.status;p.draft.updatedAt=p.updatedAt;if(p.syncedAt===undefined) delete p.draft.syncedAt;else p.draft.syncedAt=p.syncedAt;});
-    return 0;
+async function restoreLocalOutbox(){
+  const queued=await VaxReachRuntime.Outbox.all();
+  let changed=false;
+  for(const item of queued||[]){
+    const existing=DB.vaccineDrafts.find(d=>d.id===item.id||d.clientDraftId===item.clientDraftId);
+    const restored={...item,status:navigator.onLine?'pending_sync':'offline_draft'};
+    if(existing) Object.assign(existing,restored);
+    else DB.vaccineDrafts.unshift(restored);
+    changed=true;
   }
-  return queued.length;
+  if(changed) save();
+  return queued?.length||0;
+}
+async function migrateLocalDraftsToOutbox(user){
+  if(!user||user.role!=='worker') return;
+  for(const draft of DB.vaccineDrafts||[]){
+    if(draft.workerId!==user.id||draft.serverId||!['offline_draft','pending_review','pending_sync'].includes(draft.status)) continue;
+    draft.clientDraftId=draft.clientDraftId||draft.id;
+    draft.status='pending_sync';
+    await VaxReachRuntime.Outbox.put(draft);
+  }
+  save();
 }
 
 function getSession(){
@@ -675,7 +687,7 @@ function enrichCase(c){
 const App = {
   state:{
     user:null, screen:'loading', view:'dashboard', params:{}, profileEditing:false, offlineDraftEditId:null,
-    online:navigator.onLine, pendingCount:0,
+    online:navigator.onLine, pendingCount:0, demoMode:false, runtimeConfigLoaded:false,
     voiceLang:'en', voiceSupported:!!(window.SpeechRecognition||window.webkitSpeechRecognition),
     voiceTranscript:'', voiceResponse:'', voiceAction:'',
     reportFilters:{from:addDays(todayISO(),-30), to:todayISO()}
@@ -686,10 +698,146 @@ const App = {
     const u = currentUser();
     this.state.user = u;
     this.state.screen = u ? 'app' : 'landing';
-    if(navigator.onLine) queueOfflineVaccinationDrafts();
-    window.addEventListener('online', () => { this.state.online = true; queueOfflineVaccinationDrafts(); this.render(); });
+    restoreLocalOutbox().then(()=>migrateLocalDraftsToOutbox(u)).catch(()=>{});
+    window.addEventListener('online', async () => {
+      this.state.online = true;
+      if(await this.finishPendingLogout()){
+        clearSession();this.state.user=null;this.state.screen='landing';this.render();return;
+      }
+      await this.loadRuntimeConfig();
+      if(this.state.user){
+        await this.refreshServerBootstrap().catch(()=>{});
+        await migrateLocalDraftsToOutbox(this.state.user).catch(()=>{});
+        await this.syncOfflineVaccinationDrafts().catch(()=>{});
+        await this.refreshServerDrafts().catch(()=>{});
+      }else await this.restoreServerSession();
+      this.render();
+    });
     window.addEventListener('offline', () => { this.state.online = false; this.render(); });
+    this.loadRuntimeConfig().then(()=>{if(navigator.onLine)this.restoreServerSession();});
     this.render();
+  },
+
+  async loadRuntimeConfig(){
+    try{
+      const config=await VaxReachRuntime.apiRequest('/api/v1/config');
+      this.state.demoMode=!!config.demoMode;
+      this.state.runtimeConfigLoaded=true;
+      if(!this.state.demoMode)this.clearLocalDemoContent();
+      this.render();
+    }catch(e){this.state.runtimeConfigLoaded=true;}
+  },
+
+  clearLocalDemoContent(){
+    DB.cases=[];DB.history=[];DB.notes=[];DB.visits=[];DB.camps=[];DB.reasons=[];
+    DB.requests=[];DB.messages=[];DB.audit=[];DB.consents=[];
+    DB.config={approved:false,source:'Not configured — use a clinically approved source'};
+    save();
+  },
+
+  mergeServerBootstrap(data){
+    const oldUsers=DB.users||[];
+    const oldChildren=DB.children||[];
+    DB.users=(data.users||[]).map(serverUser=>{
+      const previous=oldUsers.find(user=>user.id===serverUser.id);
+      return {...previous,...serverUser,createdAt:serverUser.createdAt||previous?.createdAt||new Date().toISOString()};
+    });
+    let localUser=DB.users.find(user=>user.id===data.user.id);
+    if(!localUser){localUser={...oldUsers.find(user=>user.id===data.user.id),...data.user,createdAt:new Date().toISOString()};DB.users.push(localUser);}
+    else Object.assign(localUser,data.user);
+    this.state.user=localUser;
+    this.state.screen='app';
+    setSession(localUser.id);
+    DB.children=(data.children||[]).map(child=>({...oldChildren.find(old=>old.id===child.id),...child,createdAt:child.createdAt||oldChildren.find(old=>old.id===child.id)?.createdAt||new Date().toISOString()}));
+    DB.households=(data.households||[]).map(household=>({...household}));
+    DB.schedules=(data.schedules||[]).map(schedule=>({...schedule}));
+    save();
+  },
+
+  async refreshServerBootstrap(){
+    if(!navigator.onLine||!this.state.user) return;
+    const data=await VaxReachRuntime.apiRequest('/api/v1/bootstrap');
+    this.mergeServerBootstrap(data);
+  },
+
+  async finishPendingLogout(){
+    if(localStorage.getItem('vaxreach.logoutPending')!=='1') return false;
+    try{
+      const sessionData=await VaxReachRuntime.apiRequest('/api/v1/auth/me');
+      VaxReachRuntime.setCsrfToken(sessionData.csrfToken);
+      await VaxReachRuntime.apiRequest('/api/v1/auth/logout',{method:'POST'});
+      localStorage.removeItem('vaxreach.logoutPending');
+    }catch(e){if(e.status===401)localStorage.removeItem('vaxreach.logoutPending');}
+    return true;
+  },
+
+  async restoreServerSession(){
+    if(await this.finishPendingLogout()){this.state.user=null;this.state.screen='landing';this.render();return;}
+    try{
+      const sessionData=await VaxReachRuntime.apiRequest('/api/v1/auth/me');
+      VaxReachRuntime.setCsrfToken(sessionData.csrfToken);
+      this.mergeServerBootstrap(await VaxReachRuntime.apiRequest('/api/v1/bootstrap'));
+      await restoreLocalOutbox();
+      await migrateLocalDraftsToOutbox(this.state.user);
+      await this.syncOfflineVaccinationDrafts();
+      await this.refreshServerDrafts();
+    }catch(error){
+      if(error.status===401){clearSession();this.state.user=null;this.state.screen='landing';}
+    }
+    this.render();
+  },
+
+  async refreshServerDrafts(){
+    if(!navigator.onLine||!this.state.user) return;
+    const data=await VaxReachRuntime.apiRequest('/api/v1/vaccination-drafts');
+    const pendingLocal=(DB.vaccineDrafts||[]).filter(d=>['offline_draft','pending_sync'].includes(d.status));
+    const remote=(data.drafts||[]).map(row=>({...row,id:row.id,serverId:row.id,clientDraftId:row.clientDraftId,createdAt:row.createdAt,updatedAt:row.updatedAt,syncedAt:row.syncedAt}));
+    const merged=[...remote];
+    for(const draft of pendingLocal){
+      const index=merged.findIndex(item=>item.clientDraftId===draft.clientDraftId&&item.workerId===draft.workerId);
+      if(index>=0)merged[index]={...merged[index],...draft};
+      else merged.push(draft);
+    }
+    DB.vaccineDrafts=merged;
+    save();
+  },
+
+  async refreshServerAudit(){
+    if(!navigator.onLine||this.state.user?.role!=='admin')return;
+    const data=await VaxReachRuntime.apiRequest('/api/v1/audit');
+    DB.audit=(data.events||[]).map(event=>({...event,at:event.at}));
+    save();
+  },
+
+  async syncOfflineVaccinationDrafts(){
+    const user=this.state.user;
+    if(!navigator.onLine||!user||user.role!=='worker') return 0;
+    const queued=await VaxReachRuntime.Outbox.all();
+    let synced=0;
+    for(const item of queued||[]){
+      if(item.workerId!==user.id) continue;
+      try{
+        const result=await VaxReachRuntime.apiRequest('/api/v1/vaccination-drafts',{method:'POST',body:{
+          clientDraftId:item.clientDraftId||item.id,
+          scheduleId:item.scheduleId,
+          administeredDate:item.administeredDate,
+          notes:item.notes||''
+        }});
+        const remote=result.draft;
+        const local=DB.vaccineDrafts.find(d=>d.clientDraftId===(item.clientDraftId||item.id)||d.id===item.id);
+        if(local) Object.assign(local,remote,{id:remote.id,serverId:remote.id,clientDraftId:remote.clientDraftId,status:remote.status});
+        else DB.vaccineDrafts.unshift({...item,...remote,id:remote.id,serverId:remote.id});
+        await VaxReachRuntime.Outbox.remove(item.id);
+        synced++;
+      }catch(error){
+        if(error.status===401){clearSession();this.state.user=null;this.state.screen='landing';}
+        else if(error.status===404||error.status===409||error.status===422) toast(error.message,'err');
+        break;
+      }
+    }
+    if(synced) save();
+    this.state.pendingCount=(await VaxReachRuntime.Outbox.all()).filter(item=>item.workerId===user.id).length;
+    return synced;
   },
 
   render(){
@@ -699,7 +847,12 @@ const App = {
     if(!this.state.user){ this.state.screen='landing'; return this.render(); }
 
     const u = this.state.user;
-    const nav = NAV[u.role] || [];
+    const serverNav={
+      admin:[['dashboard','Dashboard','grid'],['children','Children','baby'],['households','Households','home'],['offline','Vaccination review','shield'],['users','Users','users'],['audit','Audit','eye'],['profile','Profile','person']],
+      worker:[['dashboard','Dashboard','grid'],['children','Children','baby'],['offline','Offline drafts','wifiOff'],['profile','Profile','person']],
+      child:[['dashboard','Dashboard','grid'],['children','My Vaccinations','syringe'],['profile','Profile','person']]
+    };
+    const nav = this.state.demoMode ? (NAV[u.role]||[]) : (serverNav[u.role]||[]);
     const cur = nav.find(i=>i[0]===this.state.view);
     const title = cur ? cur[1] : 'VaxReach';
     const navHtml = nav.map(([v,label,ic])=>
@@ -723,6 +876,8 @@ const App = {
     this.state.view = view;
     this.state.params = params || {};
     this.render();
+    if(view==='offline'&&navigator.onLine&&this.state.user) this.refreshServerDrafts().then(()=>this.render()).catch(()=>{});
+    if(view==='audit'&&navigator.onLine&&this.state.user?.role==='admin') this.refreshServerAudit().then(()=>this.render()).catch(()=>{});
     window.scrollTo({top:0,behavior:'smooth'});
   },
 
@@ -755,19 +910,30 @@ const App = {
     this.loginWithCredentials(email,pw);
   },
 
-  loginWithCredentials(email,pw){
-    const user = DB.users.find(u=>u.email.toLowerCase()===email.trim().toLowerCase() && u.password===hashPw(pw));
-    if(!user){ toast('Invalid email or password', 'err'); return; }
-    if(!user.active){ toast('Account disabled', 'err'); return; }
-    setSession(user.id);
-    this.state.user = user;
-    this.state.screen = 'app';
-    this.state.view = 'dashboard';
-    toast('Welcome, ' + user.name.split(' ')[0]);
-    this.render();
+  async loginWithCredentials(email,pw){
+    try{
+      if(!this.state.runtimeConfigLoaded)await this.loadRuntimeConfig();
+      const result=await VaxReachRuntime.apiRequest('/api/v1/auth/login',{method:'POST',body:{email:email.trim().toLowerCase(),password:pw}});
+      VaxReachRuntime.setCsrfToken(result.csrfToken);
+      this.state.view='dashboard';
+      this.mergeServerBootstrap(await VaxReachRuntime.apiRequest('/api/v1/bootstrap'));
+      await migrateLocalDraftsToOutbox(this.state.user);
+      await this.syncOfflineVaccinationDrafts();
+      await this.refreshServerDrafts();
+      if(this.state.user.role==='admin')await this.refreshServerAudit().catch(()=>{});
+      toast('Welcome, '+this.state.user.name.split(' ')[0]);
+      this.render();
+    }catch(error){
+      if(error.status===401) toast('Email or password is incorrect','err');
+      else toast(error.message||'Could not sign in. Check the server connection.','err');
+    }
   },
 
-  doLogout(){
+  async doLogout(){
+    if(navigator.onLine){
+      try{await VaxReachRuntime.apiRequest('/api/v1/auth/logout',{method:'POST'});localStorage.removeItem('vaxreach.logoutPending');}
+      catch(e){localStorage.setItem('vaxreach.logoutPending','1');}
+    }else localStorage.setItem('vaxreach.logoutPending','1');
     clearSession();
     this.state.user = null;
     this.state.screen = 'landing';
@@ -904,7 +1070,7 @@ const App = {
   openAdministerModal(scheduleId, childId, vaccineCode){
     this.goto('offline',{scheduleId,childId,vaccineCode});
   },
-  saveOfflineVaccinationDraft(event){
+  async saveOfflineVaccinationDraft(event){
     event.preventDefault();
     const user=this.state.user;
     if(!user||user.role!=='worker'){toast('Only health workers can submit vaccination drafts','err');return;}
@@ -918,17 +1084,22 @@ const App = {
     if(!administeredDate||administeredDate>todayISO()){toast('Enter a valid vaccination date','err');return;}
     const now=new Date().toISOString();
     const editing=this.state.offlineDraftEditId?DB.vaccineDrafts.find(d=>d.id===this.state.offlineDraftEditId&&d.workerId===user.id&&d.status==='rejected'):null;
-    const duplicate=DB.vaccineDrafts.find(d=>d.scheduleId===s.id&&d.id!==editing?.id&&['offline_draft','pending_review','rejected'].includes(d.status));
+    const duplicate=DB.vaccineDrafts.find(d=>d.scheduleId===s.id&&d.id!==editing?.id&&['offline_draft','pending_sync','pending_review','rejected'].includes(d.status));
     if(duplicate){toast('A draft for this scheduled dose is already waiting for review','err');return;}
     const previousDrafts=JSON.stringify(DB.vaccineDrafts);
-    const values={scheduleId:s.id,childId:child.id,vaccineCode:s.vaccineCode,administeredDate,notes:form.elements.notes.value.trim(),workerId:user.id,workerName:user.name,status:navigator.onLine?'pending_review':'offline_draft',updatedAt:now,syncedAt:navigator.onLine?now:null,reviewNote:''};
+    const values={scheduleId:s.id,childId:child.id,vaccineCode:s.vaccineCode,administeredDate,notes:form.elements.notes.value.trim(),workerId:user.id,workerName:user.name,status:'pending_sync',updatedAt:now,syncedAt:null,reviewNote:''};
     if(this.state.offlineDraftEditId&&!editing){toast('This draft can no longer be edited','err');this.state.offlineDraftEditId=null;this.render();return;}
-    if(editing) Object.assign(editing,values);
-    else DB.vaccineDrafts.unshift({id:genId('vd'),...values,createdAt:now,reviewedAt:null,reviewedBy:null});
+    const clientDraftId=editing?.clientDraftId||editing?.id||genId('vd');
+    const draft={...(editing||{}),id:editing?.id||clientDraftId,clientDraftId,...values,createdAt:editing?.createdAt||now,reviewedAt:null,reviewedBy:null};
+    if(editing) Object.assign(editing,draft);
+    else DB.vaccineDrafts.unshift(draft);
+    try{await VaxReachRuntime.Outbox.put(draft);}
+    catch(error){DB.vaccineDrafts=JSON.parse(previousDrafts);toast(error.message||'Offline draft storage is unavailable','err');this.render();return;}
     if(!save()){DB.vaccineDrafts=JSON.parse(previousDrafts);this.render();return;}
     this.state.offlineDraftEditId=null;
     this.state.params={};
-    toast(navigator.onLine?'Draft sent for administrator review':'Vaccination saved as an offline draft');
+    if(navigator.onLine){const synced=await this.syncOfflineVaccinationDrafts();await this.refreshServerDrafts().catch(()=>{});toast(synced?'Draft synced for administrator review':'Draft saved on this device; sync will retry');}
+    else toast('Vaccination saved as an offline draft');
     this.render();
   },
   editOfflineVaccinationDraft(id){
@@ -938,50 +1109,32 @@ const App = {
     this.goto('offline',{scheduleId:d.scheduleId});
   },
   cancelOfflineVaccinationDraftEdit(){this.state.offlineDraftEditId=null;this.state.params={};this.render();},
-  approveVaccinationDraft(id){
+  async approveVaccinationDraft(id){
     const user=this.state.user;
     if(!user||user.role!=='admin'){toast('Administrator access is required','err');return;}
     if(!navigator.onLine){toast('Reconnect before verifying drafts','err');return;}
     const draft=DB.vaccineDrafts.find(d=>d.id===id&&d.status==='pending_review');
-    const schedule=draft&&DB.schedules.find(s=>s.id===draft.scheduleId);
-    if(!draft||!schedule||schedule.administeredDate){toast('This dose cannot be verified in its current state','err');return;}
-    const previousSchedule={...schedule},previousDraft={...draft},previousAudit=DB.audit.slice();
-    const now=new Date().toISOString();
-    schedule.administeredDate=draft.administeredDate;
-    schedule.status='completed';
-    schedule.administeredBy=draft.workerId;
-    schedule.notes=draft.notes;
-    schedule.verifiedBy=user.id;
-    schedule.verifiedAt=now;
-    draft.status='approved';
-    draft.reviewedAt=now;
-    draft.reviewedBy=user.id;
-    draft.updatedAt=now;
-    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:'Verified vaccination draft '+draft.id});
-    if(!save()){Object.assign(schedule,previousSchedule);Object.assign(draft,previousDraft);DB.audit=previousAudit;this.render();return;}
-    toast('Vaccination draft verified');
-    this.render();
+    if(!draft?.serverId){toast('This draft is not on the server yet','err');return;}
+    try{
+      const result=await VaxReachRuntime.apiRequest(`/api/v1/vaccination-drafts/${encodeURIComponent(draft.serverId)}/review`,{method:'POST',body:{decision:'approved'}});
+      if(result.schedule){const i=DB.schedules.findIndex(s=>s.id===result.schedule.id);if(i>=0)DB.schedules[i]=result.schedule;}
+      await this.refreshServerDrafts();await this.refreshServerBootstrap();
+      toast('Vaccination draft verified on the server');this.render();
+    }catch(error){toast(error.message||'Could not verify the draft','err');}
   },
-  requestVaccinationDraftChanges(id){
+  async requestVaccinationDraftChanges(id){
     const user=this.state.user;
     if(!user||user.role!=='admin'){toast('Administrator access is required','err');return;}
     if(!navigator.onLine){toast('Reconnect before reviewing drafts','err');return;}
     const draft=DB.vaccineDrafts.find(d=>d.id===id&&d.status==='pending_review');
-    if(!draft){toast('This draft is no longer awaiting review','err');return;}
+    if(!draft?.serverId){toast('This draft is not on the server yet','err');return;}
     const note=prompt('Enter the changes required before this vaccination can be verified:');
     if(note===null) return;
     if(!note.trim()){toast('Enter a reason for requesting changes','err');return;}
-    const previousDraft={...draft},previousAudit=DB.audit.slice();
-    const now=new Date().toISOString();
-    draft.status='rejected';
-    draft.reviewNote=note.trim();
-    draft.reviewedAt=now;
-    draft.reviewedBy=user.id;
-    draft.updatedAt=now;
-    DB.audit.unshift({id:genId('a'),at:now,actorName:user.name,action:'Requested changes for vaccination draft '+draft.id});
-    if(!save()){Object.assign(draft,previousDraft);DB.audit=previousAudit;this.render();return;}
-    toast('Changes requested from the health worker');
-    this.render();
+    try{
+      await VaxReachRuntime.apiRequest(`/api/v1/vaccination-drafts/${encodeURIComponent(draft.serverId)}/review`,{method:'POST',body:{decision:'rejected',note:note.trim()}});
+      await this.refreshServerDrafts();toast('Changes requested from the health worker');this.render();
+    }catch(error){toast(error.message||'Could not submit the review','err');}
   },
 
   downloadVaccinationCertificate(scheduleId){
@@ -1051,22 +1204,71 @@ const App = {
     this.render();
   },
 
-  toggleUser(id, active){
-    const u = DB.users.find(x=>x.id===id);
-    if(!u) return;
-    if(u.id===this.state.user.id && !active){ toast('Cannot deactivate yourself', 'err'); return; }
-    u.active = active;
-    save();
-    toast(active ? 'Enabled' : 'Disabled');
-    this.render();
+  async toggleUser(id, active){
+    if(id===this.state.user.id&&!active){toast('Cannot deactivate yourself','err');return;}
+    try{
+      await VaxReachRuntime.apiRequest(`/api/v1/admin/users/${encodeURIComponent(id)}`,{method:'PATCH',body:{active}});
+      await this.refreshServerBootstrap();
+      toast(active?'Account enabled':'Account disabled');this.render();
+    }catch(error){toast(error.message||'Could not update account','err');}
+  },
+
+  async createServerUser(event){
+    event.preventDefault();
+    const form=event.currentTarget;
+    const data=Object.fromEntries(new FormData(form).entries());
+    if(data.childId==='')delete data.childId;
+    try{
+      await VaxReachRuntime.apiRequest('/api/v1/admin/users',{method:'POST',body:data});
+      await this.refreshServerBootstrap();
+      toast('Account created in the database');this.render();
+    }catch(error){toast(error.message||'Could not create account','err');}
+  },
+
+  updateAccountRole(select){
+    const childSelect=select.form.elements.childId;
+    if(childSelect)childSelect.required=select.value==='child';
+  },
+
+  async createServerChild(event){
+    event.preventDefault();
+    const form=event.currentTarget;
+    const body=Object.fromEntries(new FormData(form).entries());
+    try{
+      const result=await VaxReachRuntime.apiRequest('/api/v1/admin/children',{method:'POST',body});
+      await this.refreshServerBootstrap();
+      toast('Child and household saved in the database');
+      this.goto('child',{id:result.child.id});
+    }catch(error){toast(error.message||'Could not save child record','err');}
+  },
+
+  async addServerSchedule(event,childId){
+    event.preventDefault();
+    const form=event.currentTarget;
+    const body={schedules:[{vaccineCode:form.elements.vaccineCode.value.trim(),dueDate:form.elements.dueDate.value}]};
+    try{
+      await VaxReachRuntime.apiRequest(`/api/v1/admin/children/${encodeURIComponent(childId)}/schedules`,{method:'POST',body});
+      await this.refreshServerBootstrap();
+      toast('Dose added to the server schedule');this.render();
+    }catch(error){toast(error.message||'Could not add schedule','err');}
   },
 
   toggleProfileEdit(){ this.state.profileEditing=true; this.render(); },
   cancelProfileEdit(){ this.state.profileEditing=false; this.render(); },
 
-  saveProfile(event){
+  async saveProfile(event){
     event.preventDefault();
     const f = event.target;
+    if(!this.state.demoMode){
+      try{
+        const data=Object.fromEntries(new FormData(f).entries());
+        await VaxReachRuntime.apiRequest('/api/v1/account',{method:'PATCH',body:data});
+        await this.refreshServerBootstrap();
+        this.state.profileEditing=false;
+        toast('Profile saved to the server');this.render();
+      }catch(error){toast(error.message||'Could not save profile','err');}
+      return;
+    }
     const nameInput = f.elements.namedItem('name');
     const phoneInput = f.elements.namedItem('phone');
     const facilityInput = f.elements.namedItem('facility');
@@ -1234,6 +1436,20 @@ const App = {
   },
 
   landingView(){
+    if(!this.state.demoMode)return `<div class="land">
+      <nav class="land-nav" aria-label="Main navigation"><div class="land-brand"><div class="logo-mark">${LOGO}</div> VaxReach</div><div class="land-nav-actions"><button class="btn ghost sm" onclick="App.showAuth()">Sign in</button></div></nav>
+      <section class="land-hero"><span class="land-eyebrow">VaxReach · Health worker workflow</span><h1>Vaccination records that <span class="accent">stay in sync.</span></h1>
+        <p class="land-lead">Health workers can record vaccination details online or save them on this device while offline. Submissions sync to the central review queue and update the schedule only after administrator verification.</p>
+        <div class="land-hero-actions"><button class="btn" onclick="App.showAuth()">Sign in</button></div>
+      </section>
+      <section class="land-section"><h2 class="land-section-title">Connected workflow</h2><div class="land-info-grid">
+        <article class="land-info-card"><div class="land-info-icon">${icon('baby')}</div><h3>Central records</h3><p>Authorised administrators create worker accounts, child records and dose schedules in the database.</p></article>
+        <article class="land-info-card"><div class="land-info-icon">${icon('wifiOff')}</div><h3>Offline drafts</h3><p>Workers can save vaccination entries on this device when the network is unavailable.</p></article>
+        <article class="land-info-card"><div class="land-info-icon">${icon('shield')}</div><h3>Administrator review</h3><p>Synced entries remain pending until an administrator verifies them.</p></article>
+      </div></section>
+      <section class="land-section"><div class="land-demo-note"><strong>Clinical and privacy note.</strong> Configure an approved immunisation schedule and secure hosting before operational use. Offline records are stored in this browser and are not encrypted by the application.</div></section>
+      <footer class="land-footer"><strong>VaxReach</strong> · Server-backed vaccination workflow</footer>
+    </div>`;
     return `<div class="land">
       <nav class="land-nav" aria-label="Main navigation">
         <div class="land-brand"><div class="logo-mark">${LOGO}</div> VaxReach</div>
@@ -1321,7 +1537,7 @@ const App = {
           <h1>Coordinate immunisation follow-ups.</h1>
           <p class="lead">Each child account opens one child's own vaccination record. A trusted adult's contact details help the care team follow up.</p>
         </div>
-        <p class="small" style="opacity:.8">Prototype — not an official registry.</p>
+        <p class="small" style="opacity:.8">${this.state.demoMode?'Prototype — not an official registry.':'Server-backed VaxReach account sign-in.'}</p>
       </div>
       <div class="auth-panel">
         <div class="auth-box">
@@ -1331,7 +1547,7 @@ const App = {
             <label class="field"><span>Password</span><input type="password" name="password" id="login-password" required /></label>
             <button class="btn block" type="submit">Sign in</button>
           </form>
-          <div class="demo-box">
+          <div class="demo-box" style="${this.state.demoMode?'':'display:none'}">
             <h4>Demo credentials</h4>
             <div class="demo-row"><span>Admin</span><span><code>admin@vaxreach.demo</code> / <code>admin123</code></span><button class="btn ghost sm demo-login" type="button" onclick="App.demoLogin('admin@vaxreach.demo','admin123')" aria-label="Sign in as Admin">Sign in</button></div>
             <div class="demo-row"><span>Worker</span><span><code>worker@vaxreach.demo</code> / <code>worker123</code></span><button class="btn ghost sm demo-login" type="button" onclick="App.demoLogin('worker@vaxreach.demo','worker123')" aria-label="Sign in as Worker">Sign in</button></div>
@@ -1356,7 +1572,7 @@ const App = {
       const reviewed=DB.vaccineDrafts.filter(d=>['approved','rejected'].includes(d.status)).sort((a,b)=>String(b.reviewedAt||'').localeCompare(String(a.reviewedAt||''))).slice(0,10);
       return `<div class="between" style="margin-bottom:16px"><div><h2>Vaccination review</h2><p class="muted small">Verify worker submissions before they update a child's schedule.</p></div></div>
         ${!navigator.onLine?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>Offline — review paused</h4><p>Reconnect before verifying submissions. Drafts saved offline move to this review queue when the connection returns.</p></div></div>`:''}
-        <div class="context-banner cb-follow"><div class="cb-ic">${icon('shield')}</div><div><h4>Administrator verification</h4><p>Only verified submissions update the vaccination schedule. This prototype stores drafts in this browser; delivery between devices requires a secure server.</p></div></div>
+        <div class="context-banner cb-follow"><div class="cb-ic">${icon('shield')}</div><div><h4>Administrator verification</h4><p>Synced submissions are stored in the central database. Only administrator verification updates the vaccination schedule.</p></div></div>
         <div class="card"><div class="card-head"><h3>Waiting for review</h3><span class="badge info">${waiting.length}</span></div><div class="table-wrap"><table class="tbl">
           <thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Health worker</th><th>Notes</th><th></th></tr></thead>
           <tbody>${waiting.map(d=>{const child=DB.children.find(c=>c.id===d.childId),worker=DB.users.find(w=>w.id===d.workerId);return `<tr><td>${esc(child?.name||'Unknown child')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${esc(worker?.name||d.workerName||'Unknown worker')}</td><td>${esc(d.notes||'—')}</td><td><div class="row"><button class="btn sm" ${navigator.onLine?'':'disabled'} onclick="App.approveVaccinationDraft('${d.id}')">Verify</button><button class="btn ghost sm" ${navigator.onLine?'':'disabled'} onclick="App.requestVaccinationDraftChanges('${d.id}')">Request changes</button></div></td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No submissions are waiting for administrator review.</td></tr>'}</tbody>
@@ -1366,21 +1582,21 @@ const App = {
     }
 
     const childIds=new Set(scopeChildren(user).map(c=>c.id));
-    const available=DB.schedules.filter(s=>childIds.has(s.childId)&&!s.administeredDate&&!DB.vaccineDrafts.some(d=>d.scheduleId===s.id&&d.id!==this.state.offlineDraftEditId&&['offline_draft','pending_review','rejected'].includes(d.status))).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+    const available=DB.schedules.filter(s=>childIds.has(s.childId)&&!s.administeredDate&&!DB.vaccineDrafts.some(d=>d.scheduleId===s.id&&d.id!==this.state.offlineDraftEditId&&['offline_draft','pending_sync','pending_review','rejected'].includes(d.status))).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
     const editing=this.state.offlineDraftEditId?DB.vaccineDrafts.find(d=>d.id===this.state.offlineDraftEditId&&d.workerId===user.id&&d.status==='rejected'):null;
     const selectedSchedule=editing?.scheduleId||this.state.params.scheduleId||'';
     const drafts=DB.vaccineDrafts.filter(d=>d.workerId===user.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
     const options=available.map(s=>{const child=DB.children.find(c=>c.id===s.childId);return `<option value="${esc(s.id)}" ${s.id===selectedSchedule?'selected':''}>${esc(child?.name||'Unknown child')} · ${esc(s.vaccineCode)} · due ${fmtDate(s.dueDate)}</option>`}).join('');
     const rows=drafts.map(d=>{const child=DB.children.find(c=>c.id===d.childId);const action=d.status==='rejected'?`<button class="btn ghost sm" onclick="App.editOfflineVaccinationDraft('${d.id}')">Edit and resubmit</button>`:'';return `<tr><td>${esc(child?.name||'Unknown child')}</td><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate)}</td><td>${statusBadge(d.status)}${d.reviewNote?`<div class="tiny muted" style="margin-top:5px">${esc(d.reviewNote)}</div>`:''}</td><td>${fmtDT(d.updatedAt||d.createdAt)}</td><td>${action}</td></tr>`}).join('');
     return `<div class="between" style="margin-bottom:16px"><div><h2>Offline vaccination drafts</h2><p class="muted small">Enter vaccination details on this page. Submissions remain drafts until an administrator verifies them.</p></div></div>
-      ${navigator.onLine?`<div class="context-banner cb-follow"><div class="cb-ic">${icon('wifi')}</div><div><h4>Connection available</h4><p>New submissions are sent to the administrator review queue. The schedule changes only after verification.</p></div></div>`:`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>Offline — drafts stay on this device</h4><p>Save vaccination details now. When internet returns, the drafts move to the administrator review queue in this browser.</p></div></div>`}
+      ${navigator.onLine?`<div class="context-banner cb-follow"><div class="cb-ic">${icon('wifi')}</div><div><h4>Connection available</h4><p>New submissions sync to the central administrator review queue. The schedule changes only after verification.</p></div></div>`:`<div class="context-banner cb-warn"><div class="cb-ic">${icon('wifiOff')}</div><div><h4>Offline — drafts stay on this device</h4><p>Save vaccination details now. When internet returns, the drafts sync to the central administrator review queue.</p></div></div>`}
       <div class="card card-pad" style="margin-bottom:16px"><div class="between" style="margin-bottom:14px"><div><h3>${editing?'Edit vaccination draft':'Record vaccination'}</h3><p class="small muted">Select a child and scheduled vaccine dose. This form is the only place to enter vaccination details.</p></div></div>
         ${available.length?`<form onsubmit="App.saveOfflineVaccinationDraft(event)"><label class="field"><span>Child and vaccine dose</span><select name="scheduleId" required>${options}</select></label>
           <div class="form-grid"><label class="field"><span>Date administered</span><input type="date" name="date" value="${esc(editing?.administeredDate||todayISO())}" max="${todayISO()}" required /></label><label class="field"><span>Notes</span><textarea name="notes" rows="2">${esc(editing?.notes||'')}</textarea></label></div>
           <div class="row" style="justify-content:flex-end">${editing?'<button class="btn ghost" type="button" onclick="App.cancelOfflineVaccinationDraftEdit()">Cancel</button>':''}<button class="btn" type="submit">${navigator.onLine?'Submit for administrator review':'Save offline draft'}</button></div></form>`:`<div class="context-banner cb-warn" style="margin-bottom:0"><div class="cb-ic">${icon('info')}</div><div><h4>No eligible doses</h4><p>There are no unrecorded scheduled doses available for your assigned children.</p></div></div>`}
       </div>
       <div class="card"><div class="card-head"><h3>My vaccination submissions</h3><span class="badge gray">${drafts.length}</span></div><div class="table-wrap"><table class="tbl"><thead><tr><th>Child</th><th>Vaccine</th><th>Date given</th><th>Status</th><th>Last update</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="muted">No submissions yet. Use the form above to report a vaccination.</td></tr>'}</tbody></table></div></div>
-      <div class="disclaimer-box mt16">Drafts are kept in this browser only. Keep the same browser data until an administrator has reviewed the submissions. A secure server is required for delivery between devices.</div>`;
+      <div class="disclaimer-box mt16">Offline drafts remain on this device until the connection returns. Keep this browser's site data until each draft has synced and received an administrator decision.</div>`;
   },
 
   view_dashboard(){
@@ -1502,13 +1718,21 @@ const App = {
       if(!child)return `<div class="card card-pad">No vaccination record is linked to this account.</div>`;
       const schedule=DB.schedules.filter(d=>d.childId===child.id).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
       return `<div class="between" style="margin-bottom:16px"><div><h2>My Vaccinations</h2><p class="muted small">This account shows one child's record. A trusted adult can help contact the health team if anything looks wrong.</p></div></div>
-        <div class="context-banner cb-warn"><div class="cb-ic">${icon('info')}</div><div><h4>About certificates</h4><p>Certificates are available for recorded vaccinations and are checked against this browser's demo record. They are not official or clinically verified documents.</p></div></div>
+        ${this.state.demoMode?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('info')}</div><div><h4>Demo account</h4><p>These sample records are fictional and certificates are not official documents.</p></div></div>`:`<div class="context-banner cb-follow"><div class="cb-ic">${icon('info')}</div><div><h4>Central vaccination record</h4><p>This schedule is served from VaxReach's database. Official certificates require an approved issuing process.</p></div></div>`}
         <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>Vaccine</th><th>Date</th><th>Status</th><th>Certificate</th></tr></thead>
-        <tbody>${schedule.map(d=>`<tr><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate||d.dueDate)}</td><td><div class="dose-status">${statusBadge(d.status)}${d.administeredDate?'<span class="badge ok" title="Matched to the local demo record; not clinical verification">Verified · demo</span>':''}</div></td><td><button class="btn ghost sm" type="button" onclick="App.downloadVaccinationCertificate('${d.id}')" ${d.administeredDate?'':'disabled title="Available after this vaccination is recorded"'}>${d.administeredDate?'Download certificate':'Not available'}</button></td></tr>`).join('')||'<tr><td colspan="4">No schedule is listed.</td></tr>'}</tbody></table></div></div>
-        <div class="disclaimer-box" style="margin-top:14px">Demo schedule only. Dates are not clinically verified. Confirm timing with an authorised health professional.</div>`;
+        <tbody>${schedule.map(d=>{const certificate=this.state.demoMode&&d.administeredDate;return `<tr><td>${esc(d.vaccineCode)}</td><td>${fmtDate(d.administeredDate||d.dueDate)}</td><td><div class="dose-status">${statusBadge(d.status)}${this.state.demoMode&&d.administeredDate?'<span class="badge ok" title="Demo record only">Demo</span>':''}</div></td><td><button class="btn ghost sm" type="button" ${certificate?`onclick="App.downloadVaccinationCertificate('${d.id}')"`:'disabled'}>${certificate?'Demo certificate':'Not configured'}</button></td></tr>`}).join('')||'<tr><td colspan="4">No schedule is listed.</td></tr>'}</tbody></table></div></div>
+        <div class="disclaimer-box" style="margin-top:14px">${this.state.demoMode?'Demo schedule only; dates are not clinically verified.':'Vaccination dates and dose schedules must be entered and checked by authorised health staff.'}</div>`;
     }
     const kids=scopeChildren(user).map(enrichChild);
-    return `<div class="between" style="margin-bottom:16px"><h2>Children</h2></div><div class="card"><div class="table-wrap"><table class="tbl">
+    const workers=DB.users.filter(u=>u.role==='worker'&&u.active);
+    const households=DB.households;
+    return `${user.role==='admin'?`<div class="card card-pad" style="margin-bottom:16px"><div class="between" style="margin-bottom:12px"><div><h3>Add a child record</h3><p class="small muted">Saved to the central database. Select an existing household or enter a new one.</p></div></div>
+      <form onsubmit="App.createServerChild(event)"><div class="form-grid"><label class="field"><span>Child name</span><input name="name" required maxlength="120" /></label><label class="field"><span>Date of birth</span><input type="date" name="dob" max="${todayISO()}" required /></label>
+      <label class="field"><span>Sex (optional)</span><input name="sex" maxlength="30" /></label><label class="field"><span>Assigned health worker</span><select name="assignedWorkerId" required><option value="">Choose a worker</option>${workers.map(w=>`<option value="${esc(w.id)}">${esc(w.name)} · ${esc(w.facility||'')}</option>`).join('')}</select></label>
+      <label class="field"><span>Use existing household (optional)</span><select name="householdId"><option value="">Create a new household</option>${households.map(h=>`<option value="${esc(h.id)}">${esc(h.head)} · ${esc(h.community||'')}</option>`).join('')}</select></label>
+      <label class="field"><span>Guardian / household contact</span><input name="guardianName" maxlength="120" /></label><label class="field"><span>Contact phone</span><input name="phone" type="tel" maxlength="40" /></label><label class="field"><span>Community</span><input name="community" maxlength="120" /></label><label class="field"><span>District</span><input name="district" maxlength="120" /></label><label class="field"><span>Household address</span><input name="address" maxlength="240" /></label></div>
+      <button class="btn" type="submit">Save child</button></form></div>`:''}
+      <div class="between" style="margin-bottom:16px"><h2>Children</h2></div><div class="card"><div class="table-wrap"><table class="tbl">
       <thead><tr><th>Name</th><th>VaxReach ID</th><th>Age</th><th>Community</th><th>Status</th><th></th></tr></thead>
       <tbody>${kids.map(c=>`<tr><td><div class="t-strong">${esc(c.name)}</div><div class="tiny muted">${c.doneCount}/${c.totalCount} doses</div></td>
       <td><span class="badge gray" style="font-family:monospace">${esc(c.uniqueId)}</span></td><td>${esc(c.ageText)}</td><td>${esc(c.community)}</td><td>${statusBadge(c.status)}</td>
@@ -1526,7 +1750,7 @@ const App = {
     const sch = DB.schedules.filter(s=>s.childId===id).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
     return `
       <button class="btn ghost sm" onclick="App.goto('${u.role==='child'?'dashboard':'children'}')" style="margin-bottom:14px">${icon('arrowLeft')} Back</button>
-      <div class="context-banner cb-warn"><div class="cb-ic">${icon('alert')}</div><div><h4>Demo schedule</h4><p>${esc(DB.config.source)} — NOT clinically verified. Verify with an authorised health professional.</p></div></div>
+      ${this.state.demoMode?`<div class="context-banner cb-warn"><div class="cb-ic">${icon('alert')}</div><div><h4>Demo schedule</h4><p>Sample data only; not clinically verified.</p></div></div>`:`<div class="context-banner cb-follow"><div class="cb-ic">${icon('shield')}</div><div><h4>Server record</h4><p>Use a schedule approved by your authorised health service. VaxReach does not calculate clinical vaccine timing.</p></div></div>`}
       <div class="card card-pad" style="margin-bottom:16px">
         <div class="between">
           <div><h2>${esc(c.name)}</h2><p class="muted small">${esc(c.sex)} · ${esc(ec.ageText)} · DOB ${fmtDate(c.dob)}</p></div>
@@ -1539,19 +1763,20 @@ const App = {
           <div class="kv-i"><div class="k">Doses</div><div class="v">${ec.doneCount} of ${ec.totalCount}</div></div>
         </div>
       </div>
-      <div class="card"><div class="card-head"><h3>Schedule</h3><span class="badge warn">Unverified demo</span></div>
+      <div class="card"><div class="card-head"><h3>Schedule</h3><span class="badge ${this.state.demoMode?'warn':'info'}">${this.state.demoMode?'Demo':'Server record'}</span></div>
         <div class="card-body"><div class="timeline">
           ${sch.map(s=>{
-            const st = s.administeredDate ? 'completed' : (s.dueDate < todayISO() ? 'overdue' : 'due');
+            const st = s.administeredDate ? 'completed' : (s.status==='upcoming'?'upcoming':(s.dueDate < todayISO() ? 'overdue' : 'due'));
             return `<div class="tl-item ${st==='completed'?'done':st}">
               <div class="between">
                 <div><div class="tl-t">${esc(s.vaccineCode)}</div><div class="tl-s">${s.administeredDate ? 'Given '+fmtDate(s.administeredDate) : 'Due '+fmtDate(s.dueDate)+' · '+relDue(s.dueDate)}</div></div>
-                <div>${statusBadge(st)}${isWorker && !s.administeredDate ? `<button class="btn sm" onclick="App.goto('offline',{scheduleId:'${s.id}',childId:'${id}',vaccineCode:'${esc(s.vaccineCode)}'})">Record</button>` : ''}</div>
+                <div>${statusBadge(st)}${u.role==='worker' && !s.administeredDate ? `<button class="btn sm" onclick="App.goto('offline',{scheduleId:'${s.id}',childId:'${id}',vaccineCode:'${esc(s.vaccineCode)}'})">Record</button>` : ''}</div>
               </div>
             </div>`;
           }).join('')}
         </div></div>
-      </div>`;
+      </div>
+      ${u.role==='admin'?`<div class="card card-pad mt16"><h3>Add dose from an approved schedule</h3><p class="small muted" style="margin:6px 0 14px">Enter the vaccine code and due date supplied by an authorised health service.</p><form onsubmit="App.addServerSchedule(event,'${esc(id)}')"><div class="form-grid"><label class="field"><span>Vaccine code</span><input name="vaccineCode" maxlength="40" required /></label><label class="field"><span>Due date</span><input type="date" name="dueDate" required /></label></div><button class="btn" type="submit">Add dose</button></form></div>`:''}`;
   },
 
   view_households(){
@@ -1726,7 +1951,13 @@ const App = {
 
   view_users(){
     if(this.state.user.role!=='admin') return '<div class="card card-pad">Access denied.</div>';
-    return `<div class="between" style="margin-bottom:16px"><h2>Users</h2></div>
+    const unlinkedChildren=DB.children.filter(child=>!child.accountId);
+    return `<div class="card card-pad" style="margin-bottom:16px"><div style="margin-bottom:12px"><h3>Create account</h3><p class="small muted">The password is stored as a secure hash in the server database. Use at least 12 characters.</p></div>
+      <form onsubmit="App.createServerUser(event)"><div class="form-grid"><label class="field"><span>Name</span><input name="name" maxlength="120" required /></label><label class="field"><span>Email</span><input type="email" name="email" maxlength="254" required /></label>
+      <label class="field"><span>Temporary password</span><input type="password" name="password" minlength="12" maxlength="200" autocomplete="new-password" required /></label><label class="field"><span>Role</span><select name="role" required onchange="App.updateAccountRole(this)"><option value="worker">Health worker</option><option value="admin">Administrator</option><option value="child">Child / family</option></select></label>
+      <label class="field"><span>Phone (optional)</span><input name="phone" type="tel" maxlength="40" /></label><label class="field"><span>Facility (optional)</span><input name="facility" maxlength="160" /></label>
+      <label class="field"><span>Link child account (optional)</span><select name="childId"><option value="">No child selected</option>${unlinkedChildren.map(child=>`<option value="${esc(child.id)}">${esc(child.name)} · ${esc(child.uniqueId)}</option>`).join('')}</select></label></div><button class="btn" type="submit">Create account</button></form></div>
+      <div class="between" style="margin-bottom:16px"><h2>Users</h2></div>
       <div class="card"><div class="table-wrap"><table class="tbl">
         <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Active</th><th></th></tr></thead>
         <tbody>${DB.users.map(u=>`<tr>
@@ -1891,7 +2122,7 @@ const App = {
     const section = (title,fields) => `<section class="profile-section"><h3>${esc(title)}</h3><div class="profile-grid">${fields.join('')}</div></section>`;
     const readonlyField = (label,value) => field(label,value,null,false);
     const accountFields = [
-      field('Name',u.name,'name',true),
+      field('Name',u.name,'name',this.state.demoMode||u.role!=='child'),
       readonlyField('Email',u.email),
       readonlyField('Account type',roleNames[u.role]||u.role),
       readonlyField('Account status',u.active?'Active':'Disabled'),
