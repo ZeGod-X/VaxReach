@@ -13,7 +13,7 @@ npm install
 npm run start:local
 ```
 
-Open [http://localhost:3000](http://localhost:3000). This command starts a project-local PostgreSQL database, applies the schema, seeds fictional demo accounts, and starts the website. The database files stay under `data/local-postgres` after you stop the app. Press Ctrl+C to stop both services. Docker Compose remains available as an alternative with `docker compose up --build`.
+Open [http://localhost:3000](http://localhost:3000). This command starts a project-local UTF-8 PostgreSQL database, applies the schema, seeds fictional demo accounts, and starts the website. The database files stay under `data/local-postgres-utf8` after you stop the app. Press Ctrl+C to stop both services. Docker Compose remains available as an alternative with `docker compose up --build`.
 
 Demo sign-ins:
 

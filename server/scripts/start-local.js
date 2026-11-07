@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const databaseDir = resolve(projectRoot, 'data', 'local-postgres');
+const databaseDir = resolve(projectRoot, 'data', 'local-postgres-utf8');
 const databasePort = Number(process.env.LOCAL_DATABASE_PORT || 5432);
 const appPort = Number(process.env.PORT || 3000);
 const localPassword = 'vaxreach-local-demo-only';
@@ -19,6 +19,7 @@ const postgres = new EmbeddedPostgres({
   port: databasePort,
   persistent: true,
   autoRehydrateSymlinks: true,
+  initdbFlags: ['--encoding=UTF8'],
   postgresFlags: ['-c', 'listen_addresses=127.0.0.1']
 });
 
