@@ -6,13 +6,14 @@ The other prototype areas (case management, camps, SMS/IVR, U-WIN, maps, reports
 
 ## Run the local demo
 
-Install Docker Desktop, then open PowerShell in this project folder and run:
+With Node.js 24 or newer installed, open PowerShell in this project folder and run:
 
 ```powershell
-docker compose up --build
+npm install
+npm run start:local
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The demo database is stored in a Docker volume and remains after stopping the containers.
+Open [http://localhost:3000](http://localhost:3000). This command starts a project-local PostgreSQL database, applies the schema, seeds fictional demo accounts, and starts the website. The database files stay under `data/local-postgres` after you stop the app. Press Ctrl+C to stop both services. Docker Compose remains available as an alternative with `docker compose up --build`.
 
 Demo sign-ins:
 
