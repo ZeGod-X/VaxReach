@@ -1,14 +1,39 @@
 import EmbeddedPostgres from 'embedded-postgres';
 import { spawn } from 'node:child_process';
 import { access, mkdir } from 'node:fs/promises';
+import { createServer } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const databaseDir = resolve(projectRoot, 'data', 'local-postgres-utf8');
-const databasePort = Number(process.env.LOCAL_DATABASE_PORT || 5432);
-const appPort = Number(process.env.PORT || 3000);
 const localPassword = 'vaxreach-local-demo-only';
+
+async function portIsAvailable(port) {
+  return new Promise(resolvePort => {
+    const probe = createServer();
+    probe.once('error', () => resolvePort(false));
+    probe.listen(port, '127.0.0.1', () => probe.close(() => resolvePort(true)));
+  });
+}
+
+async function choosePort(preferredPort, variableName) {
+  if (process.env[variableName]) {
+    const requested = Number(process.env[variableName]);
+    if (!Number.isInteger(requested) || requested < 1 || requested > 65535) {
+      throw new Error(`${variableName} must be a valid TCP port.`);
+    }
+    if (!await portIsAvailable(requested)) throw new Error(`${variableName} ${requested} is already in use.`);
+    return requested;
+  }
+  for (let port = preferredPort; port < preferredPort + 32 && port <= 65535; port++) {
+    if (await portIsAvailable(port)) return port;
+  }
+  throw new Error(`No free port found near ${preferredPort}.`);
+}
+
+const databasePort = await choosePort(5432, 'LOCAL_DATABASE_PORT');
+const appPort = await choosePort(3000, 'PORT');
 
 await mkdir(resolve(projectRoot, 'data'), { recursive: true });
 
@@ -75,6 +100,7 @@ try {
     DEMO_MODE: 'true'
   };
 
+  if (appPort !== 3000) console.log(`Port 3000 is busy; using port ${appPort} instead.`);
   await runNode(['server/scripts/migrate.js'], appEnv);
   await runNode(['server/scripts/seed-demo.js'], appEnv);
 

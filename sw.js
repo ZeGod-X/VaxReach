@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vaxreach-shell-v1';
+const CACHE_NAME = 'vaxreach-shell-v2';
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/vaxreach-runtime.js', '/icon.svg'];
 
 self.addEventListener('install', event => {

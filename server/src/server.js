@@ -29,6 +29,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
       imgSrc: ["'self'", 'data:', 'blob:', 'https://*.tile.openstreetmap.org'],
       connectSrc: ["'self'", 'https://*.tile.openstreetmap.org'],
@@ -606,7 +607,7 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'API route not foun
 app.use((error, _req, res, _next) => {
   const status = Number(error.status) || 500;
   if (status >= 500) console.error('Request failed:', error.message);
-  res.status(status).json({ error: status >= 500 ? 'The server could not complete this request.' : error.message });
+  res.status(status).json({ error: status >= 500 && production ? 'The server could not complete this request.' : error.message });
 });
 
 const port = Number(process.env.PORT || 3000);
